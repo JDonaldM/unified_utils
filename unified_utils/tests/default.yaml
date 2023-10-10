@@ -1,0 +1,122 @@
+# Define the analysis setup.
+Setup:
+  # Start with the redshift of the data that should be loaded.
+  # Can be 0.096, 0.38, 0.61, 1.52
+  redshift: 0.61
+
+  # Now specify the hemisphere split.
+  # Can be either NGC or SGC.
+  # For redshift=0.096 specify NGC.
+  split: NGC
+
+  # Now specify scale cuts.
+  kmin: 0.01
+  kmax: 0.2
+
+  # Now specify the data type.
+  # Can be obs, mock, pybird.
+  # obs will load data measured from either 6dF, BOSS, or eBOSS.
+  # mock will load the mock data produced for the above surveys.
+  # pybird will load pybird predictions with Planck 18 LCDM cosmology and bias
+  # tuned to mock corresponding to the same split and redshift.
+  data_type: pybird
+  
+  # Specify a normalisation for the covariance matrix.
+  norm_cov: 1.
+
+  # Specify path to likelihood.
+  likelihood:
+    path: likelihood.py
+    function: log_like
+
+  # Specify engine
+  engine:
+    type: emulator
+    path: engine.py
+    function: emu_engine
+    engine_kwargs:
+      version: custom
+      path_to_model: /Users/jamie/Desktop/GitHubProjects/unified_analysis/models/new_cul/z0.61/
+      P11_scaler: 'log'
+      Ploop0_scaler: 'log'
+      Pct0_scaler: 'log'
+      P112_scaler: 'uniform'
+      Ploop2_scaler: 'log'
+      Pct2_scaler: 'uniform'
+
+  # Specify path where to save results.
+  save:
+    path: /Users/jamie/Desktop/GitHubProjects/unified_analysis/unified_utils/tests
+    fname: chain_from_test
+    overwrite: False
+    fname_tags: True
+
+
+# Define what parameters are fixed and what value they should be fixed at.
+# Also define the priors for all free parameters.
+# Can be either uniform or normal.
+# If uniform a min and max value must be passsed.
+# This can be a float or emu. If emu then the value will be taked from the emulator training space.
+# If normal a mean and standard deviation must be passed.
+Parameters:
+  w_c:
+    prior:
+      type: uniform
+      min: emu
+      max: emu
+  w_b:
+    prior:
+      type: uniform
+      min: emu
+      max: emu
+  h:
+    prior:
+      type: uniform
+      min: emu
+      max: emu
+  As:
+    prior:
+      type: uniform
+      min: emu
+      max: emu
+  b1:
+    prior:
+      type: uniform
+      min: 0.
+      max: 4.
+  c2:
+    prior:
+      type: uniform
+      min: -4.
+      max: 4.
+  b3:
+    prior:
+      type: normal
+      mean: 0.
+      stddev: 2.
+  c4:
+    fixed: 0.
+  cct:
+    prior:
+      type: normal
+      mean: 0.
+      stddev: 2.
+  cr1:
+    prior:
+      type: normal
+      mean: 0.
+      stddev: 8.
+  cr2:
+    fixed: 0.
+  ce1:
+    prior:
+      type: normal
+      mean: 0.
+      stddev: 400.
+  cmono:
+    fixed: 0.
+  cquad:
+    prior:
+      type: normal
+      mean: 0.
+      stddev: 2.
