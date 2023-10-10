@@ -88,6 +88,8 @@ def data_loader(redshift, split, use_mock=False, pole_selection=[True, False, Tr
         M_file = f"{path_to_repo}data/M_6dFGS_DR3_1_1_1_1_1_2000_1200.matrix"
 
         Nmocks = 600
+    else:
+        raise ValueError(f"No unified multipoles for z={redshift}. Possible redshifts are [0.096, 0.38, 0.61, 1.52].")
 
     # Load the desired data
     if use_mock:
@@ -170,7 +172,6 @@ def data_loader(redshift, split, use_mock=False, pole_selection=[True, False, Tr
     else:
         pk_data_fit = pk_data_fit[np.concatenate(sum(pole_selection)*[range_selection])].__array__()
         kbins_fit = kbins_fit[range_selection].__array__()
-
 
     return kbins_fit, pk_data_fit, cov_fit, window, M, range_selection, Nmocks
     
