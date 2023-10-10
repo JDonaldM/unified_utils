@@ -44,7 +44,7 @@ logging.info(f"split: {split}")
 kmin = config_from_file['Setup']['kmin']
 logging.info(f"kmin: {kmin}")
 kmax = config_from_file['Setup']['kmax']
-logging.info(f"kmin: {kmax}")
+logging.info(f"kmax: {kmax}")
 data_type = config_from_file['Setup']['data_type']
 logging.info(f"data type: {data_type}")
 norm_cov = config_from_file['Setup']['norm_cov']
@@ -191,17 +191,6 @@ if not (jeff_names is None):
     logging.info(f"Prior covariance: {jeff_cov}")
     jeff_params = True
 
-mv_params = False
-for p in config_from_file['Parameters']:
-    if 'fixed' in config_from_file['Parameters'][p]:
-        continue
-    else:
-        if config_from_file['Parameters'][p]['prior']['type']=='mv':
-            mv_params = True
-            mv_mean = np.load(f"{path_to_repo}data/pybird_mocks/bias/bias--P18--z-{redshift}--split-{split}.npy")
-            mv_mean = mv_mean[np.array([True if fi is None else False for fi in fixed_values.values()][4:])]
-            mv_cov = np.load(f"{path_to_repo}data/pybird_mocks/mv_prior/mv_prior--z-{redshift}--split-{split}.npy")
-
 # If there are parameters to be marginalised over fix their values on the
 # fixed_values dict.
 if marg_params:
@@ -261,25 +250,7 @@ bounds_arr = utils.poco_bounds(config_from_file['Parameters'])
 logging.info(f"Hard bounds defined: {bounds_arr}")
 
 logging.info("Defining sampler.")
-if config_from_file['Setup']['likelihood']['function']=='full_like' and mv_params:
-    likelihood_args = [kbins_fit, pk_data_fit, icov, ng, km, fixed_values,
-                       engine, Om_fid, window, M, range_selection, perturb_cond]
-    prior_args = [mv_cov, mv_mean, fixed_values, prior_list]
-
-    # Define the sampler
-    sampler = pc.Sampler(
-        nwalk,
-        prior_samples.shape[1],
-        loglike,
-        utils.mv_prior,
-        vectorize_likelihood=True,
-        vectorize_prior=True,
-        bounds=bounds_arr,
-        log_likelihood_args=likelihood_args,
-        log_prior_args=prior_args,
-        infer_vectorization=False
-    )
-elif config_from_file['Setup']['likelihood']['function']=='marg_like' and not jeff_params:
+if config_from_file['Setup']['likelihood']['function']=='marg_like' and not jeff_params:
     likelihood_args = [kbins_fit, pk_data_fit, icov, np.dot(icov,pk_data_fit),
                        ng, km, marg_cov, fixed_values, engine, marg_names,
                        Om_fid, window, M, range_selection]
