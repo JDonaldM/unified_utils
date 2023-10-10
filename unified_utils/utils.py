@@ -183,6 +183,8 @@ def check_emu_bounds(param_dict, emu_bounds):
         param_dict (dict) : Nested dictionary for parameters of model. Each element should have the
          form ``{'pi': {'prior': {'type':'uniform', 'min':a, 'max':b}}}`` or they will be 
          ignored by the function. ``a`` and ``b`` can be either floats or ``'emu'``.
+        emu_bounds (dict) : Nested dictionary containing the hard bounds of
+         of the emulator training space.
     Returns:
         ``param_dict`` with all appearances of ``'emu'`` replaced with floats and all extremes checked.
     '''
@@ -239,30 +241,40 @@ def make_prior_list(param_dict):
         in ``param_dict``.
     '''
 
+    # Define empty list that will form the prior.
     prior_list=[]
+
+    # Loop over all parameters.
     for p in param_dict:
         if 'prior' not in param_dict[p]:
+            # Skip parameter if it is fixed.
             continue
         else:
             if param_dict[p]['prior']['type']=='normal':
+                # If normal simply define scipy normal
                 prior_list.append(norm(loc=param_dict[p]['prior']['mean'],
                                     scale=param_dict[p]['prior']['stddev']))
-            elif param_dict[p]['prior']['type']=='uniform' or param_dict[p]['prior']['type']=='mv':
+            elif param_dict[p]['prior']['type']=='uniform':
+                # If uniform simply define scipy uniform 
                 prior_list.append(uniform(loc=param_dict[p]['prior']['min'],
                                     scale=param_dict[p]['prior']['max']-param_dict[p]['prior']['min']))
             elif param_dict[p]['prior']['type']=='truncated normal':
+                # If truncated normal simply define scipy truncated normal 
                 prior_list.append(truncnorm((param_dict[p]['prior']['min']-param_dict[p]['prior']['mean'])/param_dict[p]['prior']['stddev'],
                                             (param_dict[p]['prior']['max']-param_dict[p]['prior']['mean'])/param_dict[p]['prior']['stddev'],
                                             loc=param_dict[p]['prior']['mean'], scale=param_dict[p]['prior']['stddev']))
-            elif param_dict[p]['prior']['type']=='truncated exponential':
-                prior_list.append(trunc_expon(param_dict[p]['prior']['factor'], param_dict[p]['prior']['min'], param_dict[p]['prior']['max']))
             elif 'marg' in param_dict[p]['prior']['type']:
+                # If parameter will be analutically marginalised, skip.
                 continue
             elif param_dict[p]['prior']['type']=='jeff':
                 if ('min' in param_dict[p]['prior']) and ('max' in param_dict[p]['prior']):
+                    # If parameter has Jeffreys prior with hard bounds specified
+                    # define scipy uniform with specified hard bounds.
                     prior_list.append(uniform(loc=param_dict[p]['prior']['min'],
                                         scale=param_dict[p]['prior']['max']-param_dict[p]['prior']['min'])) 
                 else:
+                    # If parameter has Jeffreys prior without hard bounds
+                    # specified define uniform with hardbounds = +- 5sigma.
                     prior_list.append(uniform(loc=-5*param_dict[p]['prior']['stddev'],
                                         scale=10*param_dict[p]['prior']['stddev'])) 
             else:
