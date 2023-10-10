@@ -27,8 +27,16 @@ def data_loader(redshift, split, use_mock=False, pole_selection=[True, False, Tr
          Default is ``[True, False, True, False, True]``, this selects the even multipoles 
          ``P0``, ``P2``, and ``P4``. Note that is ``pybird_mock=True`` only the even
          multipoles can be selected.
+        norm_cov (float) : Normalisation factor for the covariance matrix. Default
+         is ``1.``.
+        kmin (float) : Set minimum scale. Default is ``0.01``.
+        kmin (float) : Set maximum scale. Default is ``0.2``.
+        pybird_mock (bool) : If ``True`` will load the appropriate ``PyBird`` mock
+         produced in arXiv:2307.07475.
         path_to_repo (str) : Path to repo. Note that all data must be stored in a directory
          with name ``data``.
+        mock_type (str) : Tag for the ``PyBird`` mocks. The mocks produced in
+         arXiv:2307.07475 all have the tag ``P18``.
     Returns:
         kbins_fit (array) : The k-bins. Has shape (nki,).
         pk_data_fit (array) : The selected multipoles. Has shape (3*nki,).
@@ -36,7 +44,8 @@ def data_loader(redshift, split, use_mock=False, pole_selection=[True, False, Tr
         window (array) : Window function matrix. Has shape (200, 2000).
         M (array) : Wide angle matrix. Has shape (1200, 2000).
         range_selection (array): Array of boolean elements that cut the
-         origonal data. Has shape (nkj,). 
+         origonal data. Has shape (nkj,).
+        Nmocks (int) : The number of mocks used to calculate the covariance.
     '''
 
     if use_mock and pybird_mock:
