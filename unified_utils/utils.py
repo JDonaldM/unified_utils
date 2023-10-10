@@ -550,18 +550,6 @@ def jeff_counter(theta, engine, kobs, cinv, fixed_vals, ng, km,
 
     return pri_eval+evaluate_prior(theta, prior_list)
 
-def mv_prior(theta, prior_cov, prior_mean, fixed_vals, prior_list):
-    theta = fix_params(np.atleast_2d(theta), fixed_vals)
-
-    # Sperate cosmo and bias params.
-    # Oc, Ob, h, As
-    cosmo = theta[:,:4]
-    # b1, c2, b3, c4, cct, cr1, cr2
-    bias = theta[:,4:11]
-
-    return multivariate_normal(mean=prior_mean, cov=prior_cov).logpdf(bias)\
-           +evaluate_prior(theta, prior_list)
-
 def jeff_counter_sys(theta, engine, kobs, cinv, fixed_vals, ng, km, jeff_names, prior_list, Om_AP, window, M,
                      range_selection, additional_prior=True, gaussian_prior=None):
     theta = fix_params(np.atleast_2d(theta), fixed_vals)
