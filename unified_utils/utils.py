@@ -198,15 +198,20 @@ def check_emu_bounds(param_dict, emu_bounds):
     # Find common parameters to check
     to_check = all_params.intersection(training_params)
     
-
+    # Loop over parameters.
     for p in to_check:
-        if 'prior' not in param_dict[p]:
+        if ('prior' not in param_dict[p]) and ('fixed' in param_dict[p]):
+            # If parameter is defined as fixed, check that the fixed value lies
+            # in the training space.
             if param_dict[p]['fixed']>emu_bounds[p]['max'] or param_dict[p]['fixed']<emu_bounds[p]['min']:
                 raise ValueError(f"Fixed value for {p} outside emulator training space.")
-        else:
+        elif 'prior' in param_dict[p]:
+            # If the parameter has a prior, check that it is an allowed type.
             if param_dict[p]['prior']['type']=='uniform'\
-                or param_dict[p]['prior']['type']=='truncated normal'\
-                or param_dict[p]['prior']['type']=='truncated exponential':
+                or param_dict[p]['prior']['type']=='truncated normal':
+                # If the type is allowed check that the hard bounds are within
+                # the training space or set them equal to the training space if 
+                # desired. 
                 if param_dict[p]['prior']['min']=='emu':
                     param_dict[p]['prior']['min'] = emu_bounds[p]['min']
                 elif param_dict[p]['prior']['min']<emu_bounds[p]['min']:
@@ -215,6 +220,10 @@ def check_emu_bounds(param_dict, emu_bounds):
                     param_dict[p]['prior']['max'] = emu_bounds[p]['max']
                 elif param_dict[p]['prior']['max']>emu_bounds[p]['max']:
                     raise ValueError(f"Prior max outside training space for {p}")
+            else:
+                raise ValueError(f"Specified prior type for {p} not allowed. Must be wother 'unifrom' or 'truncated normal'.")
+        else:
+            raise ValueError(f"Parameters must be defined as 'fixed' or have a prior distribution defined. Check definition of {p}.")
 
     return param_dict
 
