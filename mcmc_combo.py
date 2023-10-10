@@ -422,52 +422,6 @@ elif config_from_file['Setup']['likelihood']['function']=='combo_marg_like' and 
         log_prior_args=[prior_list],
         infer_vectorization=False
     )
-elif config_from_file['Setup']['likelihood']['function']=='combo_marg_like_joint' and not jeff_params and marg_params:
-    
-    # Make the joint covaraince matrix.
-    # We assume zero correlation between samples when making this.
-    joint_cov = utils.make_joint_matrix(data_dict, key='cov')
-    joint_icov = np.linalg.inv(joint_cov)
-
-    # Make combined data bector.
-    joint_data_vector = utils.make_joint_data_vector(data_dict)
-
-    # Make combined prior matrix
-    joint_marg_cov = utils.make_joint_matrix(
-        {i: {'cov':marg_cov[i]} for i in range(len(samples))}, # Make a dict that mimics data_dict
-        key='cov'
-    )
-    
-    likelihood_args = [
-        data_dict,
-        samples,
-        ngs,
-        redshifts,
-        km,
-        fixed_values,
-        engine_dict,
-        Om_fid,
-        nshared,
-        nindiv,
-        marg_names,
-        joint_marg_cov,
-        joint_icov,
-        joint_data_vector,
-        np.dot(joint_icov,joint_data_vector)
-    ]
-
-    sampler = pc.Sampler(
-        nwalk,
-        prior_samples.shape[1],
-        loglike,
-        utils.evaluate_prior,
-        vectorize_likelihood=True,
-        vectorize_prior=True,
-        bounds=bounds_arr,
-        log_likelihood_args=likelihood_args,
-        log_prior_args=[prior_list],
-        infer_vectorization=False
-    )
 elif config_from_file['Setup']['likelihood']['function']=='combo_marg_like' and jeff_params and marg_params:
     likelihood_args = [
         data_dict,
