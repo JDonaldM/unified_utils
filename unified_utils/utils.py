@@ -48,90 +48,103 @@ def data_loader(redshift, split, use_mock=False, pole_selection=[True, False, Tr
         Nmocks (int) : The number of mocks used to calculate the covariance.
     '''
 
+    # Make sure the user is explicit about what type of mock to load.
     if use_mock and pybird_mock:
         raise ValueError("use_mock and pybird_mock cannot be both True.")
 
+    # Define dictionaries that have mappings between input variables and tags in
+    # the file names.
     BOSS_z_dict = {0.38:'z1', 0.61:'z3'}
     eBOSS_split_cov_dict = {'NGC':896, 'SGC':1000}
     eBOSS_split_data_dict = {'NGC':1270, 'SGC':1040}
 
-    # TODO: Comporess this code! The structure is the same appart from file names.
-    # Load the desired data
     if redshift == 0.38 or redshift ==0.61:
-        if use_mock:
-            # When using mock data we take the mean across all the mocks
-            pk_data_fit = 0
-            for file_i in glob.glob(f"{path_to_repo}data/Patchy_V6C_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_2/*"):
-                pk_data_dict = pk_tools.read_power(file_i, combine_bins=10)
-                kbins, pk_data_vector = pk_tools.dict_to_vec(pk_data_dict)
-                kbins_fit = kbins[np.repeat(pole_selection , 40)]
-                kbins_fit = kbins_fit[:40]
-                pk_data_fit += pk_data_vector[np.repeat(pole_selection , 40)]
-            pk_data_fit = pk_data_fit/len(glob.glob(f"{path_to_repo}data/Patchy_V6C_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_2/*"))
-        else:
-            pk_data_dict = pk_tools.read_power(f"{path_to_repo}data/ps1D_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_COMPnbar_TSC_700_700_700_400_renorm.dat",
-                                            combine_bins=10)
-            kbins, pk_data_vector = pk_tools.dict_to_vec(pk_data_dict)
-            kbins_fit = kbins[np.repeat(pole_selection , 40)]
-            kbins_fit = kbins_fit[:40]
-            pk_data_fit = pk_data_vector[np.repeat(pole_selection , 40)]
-        cov = pk_tools.read_matrix(f"{path_to_repo}data/C_2048_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_V6C_1_1_1_1_1_10_200_200_prerecon.matrix")
-        cov = cov/norm_cov
+        # Must be BOSS data.
+        # Define appropriate file names.
+        cov_mock_files = glob.glob(f"{path_to_repo}data/Patchy_V6C_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_2/*")
+        data_file = f"{path_to_repo}data/ps1D_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_COMPnbar_TSC_700_700_700_400_renorm.dat"
+        cov_file = f"{path_to_repo}data/C_2048_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_V6C_1_1_1_1_1_10_200_200_prerecon.matrix"
+        window_file = f"{path_to_repo}data/W_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_V6C_1_1_1_1_1_10_200_2000_averaged_v1.matrix"
+        M_file = f"{path_to_repo}data/M_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_V6C_1_1_1_1_1_2000_1200.matrix"
+
         Nmocks = 2048
-        window = pk_tools.read_matrix(f"{path_to_repo}data/W_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_V6C_1_1_1_1_1_10_200_2000_averaged_v1.matrix")
-        M = pk_tools.read_matrix(f"{path_to_repo}data/M_BOSS_DR12_{split}_{BOSS_z_dict[redshift]}_V6C_1_1_1_1_1_2000_1200.matrix")
-        cov_fit = cov[np.ix_(np.repeat(pole_selection , 40), np.repeat(pole_selection , 40))]
-        window_fit = window[np.ix_(np.repeat(pole_selection , 40), np.ones(2000).astype(bool))]
     elif redshift == 1.52:
-        if use_mock:
-            pk_data_fit = 0
-            for file_i in glob.glob(f"{path_to_repo}data/EZmocks_eBOSS_DR16_QSO_{split}/*"):
-                pk_data_dict = pk_tools.read_power(file_i, combine_bins=10)
-                kbins, pk_data_vector = pk_tools.dict_to_vec(pk_data_dict)
-                kbins_fit = kbins[np.repeat(pole_selection , 40)]
-                kbins_fit = kbins_fit[:40]
-                pk_data_fit += pk_data_vector[np.repeat(pole_selection , 40)]
-            pk_data_fit = pk_data_fit/len(glob.glob(f"{path_to_repo}data/EZmocks_eBOSS_DR16_QSO_{split}/*"))
-        else:
-            pk_data_dict = pk_tools.read_power(f"{path_to_repo}data/ps1D_eBOSS_DR16_QSO_{split}_TSC_0.8_2.2_{eBOSS_split_data_dict[split]}_{eBOSS_split_data_dict[split]}_{eBOSS_split_data_dict[split]}_400_renorm.dat",
-                                            combine_bins=10)
-            kbins, pk_data_vector = pk_tools.dict_to_vec(pk_data_dict)
-            kbins_fit = kbins[np.repeat(pole_selection , 40)]
-            kbins_fit = kbins_fit[:40]
-            pk_data_fit = pk_data_vector[np.repeat(pole_selection , 40)]
-        cov = pk_tools.read_matrix(f"{path_to_repo}data/C_{eBOSS_split_cov_dict[split]}_eBOSS_DR16_QSO_{split}_1_1_1_1_1_10_200_200_prerecon.matrix")
-        cov = cov/norm_cov
+        # Must be eBOSS data.
+        # Define appropriate file names.
+        cov_mock_files = glob.glob(f"{path_to_repo}data/EZmocks_eBOSS_DR16_QSO_{split}/*")
+        data_file = f"{path_to_repo}data/ps1D_eBOSS_DR16_QSO_{split}_TSC_0.8_2.2_{eBOSS_split_data_dict[split]}_{eBOSS_split_data_dict[split]}_{eBOSS_split_data_dict[split]}_400_renorm.dat"
+        cov_file = f"{path_to_repo}data/C_{eBOSS_split_cov_dict[split]}_eBOSS_DR16_QSO_{split}_1_1_1_1_1_10_200_200_prerecon.matrix"
+        window_file = f"{path_to_repo}data/W_eBOSS_DR16_QSO_{split}_1_1_1_1_1_10_200_2000_averaged_v1.matrix"
+        M_file = f"{path_to_repo}data/M_eBOSS_DR16_QSO_{split}_1_1_1_1_1_2000_1200.matrix"
+
         Nmocks = eBOSS_split_cov_dict[split]
-        window = pk_tools.read_matrix(f"{path_to_repo}data/W_eBOSS_DR16_QSO_{split}_1_1_1_1_1_10_200_2000_averaged_v1.matrix")
-        M = pk_tools.read_matrix(f"{path_to_repo}data/M_eBOSS_DR16_QSO_{split}_1_1_1_1_1_2000_1200.matrix")
-        cov_fit = cov[np.ix_(np.repeat(pole_selection , 40), np.repeat(pole_selection , 40))]
-        window_fit = window[np.ix_(np.repeat(pole_selection , 40), np.ones(2000).astype(bool))]
-    else:
-        if use_mock:
-            pk_data_fit = 0
-            for file_i in glob.glob(f"{path_to_repo}data/COLA_6dFGS_DR3/*"):
-                pk_data_dict = pk_tools.read_power(file_i, combine_bins=10)
-                kbins, pk_data_vector = pk_tools.dict_to_vec(pk_data_dict)
-                kbins_fit = kbins[np.repeat(pole_selection , 40)]
-                kbins_fit = kbins_fit[:40]
-                pk_data_fit += pk_data_vector[np.repeat(pole_selection , 40)]
-            pk_data_fit = pk_data_fit/len(glob.glob(f"{path_to_repo}data/COLA_6dFGS_DR3/*"))
-        else:
-            pk_data_dict = pk_tools.read_power(f"{path_to_repo}data/ps1D_6dFGS_DR3_TSC_600_600_600_400_renorm.dat",
-                                            combine_bins=10)
-            kbins, pk_data_vector = pk_tools.dict_to_vec(pk_data_dict)
-            kbins_fit = kbins[np.repeat(pole_selection , 40)]
-            kbins_fit = kbins_fit[:40]
-            pk_data_fit = pk_data_vector[np.repeat(pole_selection , 40)]
-        cov = pk_tools.read_matrix(f"{path_to_repo}data/C_600_6dFGS_DR3_1_1_1_1_1_10_200_200_prerecon.matrix")
-        cov = cov/norm_cov
+    elif redshift == 0.096:
+        # Must be 6dFGS data.
+        # Define appropriate file names.
+        cov_mock_files = glob.glob(f"{path_to_repo}data/COLA_6dFGS_DR3/*")
+        data_file = f"{path_to_repo}data/ps1D_6dFGS_DR3_TSC_600_600_600_400_renorm.dat"
+        cov_file = f"{path_to_repo}data/C_600_6dFGS_DR3_1_1_1_1_1_10_200_200_prerecon.matrix"
+        window_file = f"{path_to_repo}data/W_6dFGS_DR3_1_1_1_1_1_10_200_2000_averaged_v1.matrix"
+        M_file = f"{path_to_repo}data/M_6dFGS_DR3_1_1_1_1_1_2000_1200.matrix"
+
         Nmocks = 600
-        window = pk_tools.read_matrix(f"{path_to_repo}data/W_6dFGS_DR3_1_1_1_1_1_10_200_2000_averaged_v1.matrix")
-        M = pk_tools.read_matrix(f"{path_to_repo}data/M_6dFGS_DR3_1_1_1_1_1_2000_1200.matrix")
-        cov_fit = cov[np.ix_(np.repeat(pole_selection , 40), np.repeat(pole_selection , 40))]
-        window_fit = window[np.ix_(np.repeat(pole_selection , 40), np.ones(2000).astype(bool))]
+
+    # Load the desired data
+    if use_mock:
+        # When using mock data we take the mean across all the mocks
+        #Start with zero sum.
+        pk_data_fit = 0
+        # Loop over all files.
+        for file_i in cov_mock_files:
+            # Use pk_tools to load data
+            pk_data_dict = pk_tools.read_power(file_i, combine_bins=10)
+            kbins, pk_data_vector = pk_tools.dict_to_vec(pk_data_dict)
+
+            # Select desired multipoles in data vector and kbins.
+            # Also add data vector to sum.
+            kbins_fit = kbins[np.repeat(pole_selection , 40)]
+            pk_data_fit += pk_data_vector[np.repeat(pole_selection , 40)]
+
+            # The kbins are repeadted for each selected multipole.
+            # Keep only the first set.
+            kbins_fit = kbins_fit[:40]
+
+        #Divide by the number of files summed to get the mean.   
+        pk_data_fit = pk_data_fit/len(cov_mock_files)
+    else:
+        # When using ral data simply load the file with pk_tools and repeat the 
+        # same multipole selection as above.
+        pk_data_dict = pk_tools.read_power(data_file, combine_bins=10)
+        kbins, pk_data_vector = pk_tools.dict_to_vec(pk_data_dict)
+        kbins_fit = kbins[np.repeat(pole_selection , 40)]
+        kbins_fit = kbins_fit[:40]
+        pk_data_fit = pk_data_vector[np.repeat(pole_selection , 40)]
+
+    # Load covaraince, window, and wide-angle matrices.
+    cov = pk_tools.read_matrix(cov_file)
+    window = pk_tools.read_matrix(window_file)
+    M = pk_tools.read_matrix(M_file)
+
+    # Normalise the matirx.
+    cov = cov/norm_cov
+
+    # Select desired multipoles in covaraince matrix.
+    cov_fit = cov[np.ix_(np.repeat(pole_selection , 40), np.repeat(pole_selection , 40))]
     
+    # Define boolean array that will impose scale cuts.
+    range_selection = np.logical_and(kbins_fit>=kmin, kbins_fit<=kmax)
+
+    # Impose scale cuts to covaraince matrix.
+    cov_fit = cov_fit[
+        np.ix_(np.concatenate(sum(pole_selection)*[range_selection]),
+        np.concatenate(sum(pole_selection)*[range_selection]))
+    ].__array__() # .__array__() to convert to normal numpy array.
+
     if pybird_mock:
+        # Check that multipole selection only includes even multipoles
+        if pole_selection[1] or pole_selection[3]:
+            raise ValueError("Odd multipoles don't exist for the PyBird mocks. Check pole selection.")
+
         # Load the pybird mock data.
         # Matrix of shape (4,nk).
         kP024 = np.load(f"{path_to_repo}/data/pybird_mocks/poles/kP024--{mock_type}--z-{redshift}--split-{split}.npy")
@@ -139,26 +152,24 @@ def data_loader(redshift, split, use_mock=False, pole_selection=[True, False, Tr
         # Flatten multipole rows into single vector.
         pk_data_fit = kP024[1:][np.array(pole_selection)[[0,2,-1]]].flatten()
 
-    range_selection = np.logical_and(kbins_fit>=kmin, kbins_fit<=kmax)
-
-    kbins_fit = kbins_fit[range_selection].__array__()
-    cov_fit = cov_fit[np.ix_(np.concatenate(sum(pole_selection)*[range_selection]), np.concatenate(sum(pole_selection)*[range_selection]))].__array__()
-    window_fit = window_fit[np.ix_(np.concatenate(sum(pole_selection)*[range_selection]), np.ones(2000).astype(bool))].__array__()
-
-    if pybird_mock:
         # kbins array for PyBird mocks is shorter.
         kbins_fit = kP024[0]
+
         # Define new range slection for shorter kbins array
         _range_selection = np.logical_and(kbins_fit>=kmin, kbins_fit<=kmax)
+
         # Convert pole selection to an array so it can be easily indexed.
         pole_selection = np.array(pole_selection)
+
         # Selected multipoles, and apply scale cut. 
-        # ALL ODD MULTIPOLES WILL BE IGNORED AS THEY DON"T EXIST FOR THE PYBIRD MOCKS.
+        # ALL ODD MULTIPOLES WILL BE IGNORED AS THEY DON'T EXIST FOR THE PYBIRD MOCKS.
         pk_data_fit = pk_data_fit[np.concatenate(sum(pole_selection[[0,2,4]])*[_range_selection])].__array__()
+
         # Apply scale cut to kbins.
         kbins_fit = kbins_fit[_range_selection]
     else:
         pk_data_fit = pk_data_fit[np.concatenate(sum(pole_selection)*[range_selection])].__array__()
+        kbins_fit = kbins_fit[range_selection].__array__()
 
 
     return kbins_fit, pk_data_fit, cov_fit, window, M, range_selection, Nmocks
