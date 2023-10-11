@@ -552,143 +552,72 @@ def special_treatment(param_dict):
     else:
         return None, None, None, None
 
-def jeff_counter_sys(theta, engine, kobs, cinv, fixed_vals, ng, km, jeff_names, prior_list, Om_AP, window, M,
-                     range_selection, additional_prior=True, gaussian_prior=None):
+def jeff_counter_sys(theta, engine, kobs, cinv, fixed_vals, ng, km, jeff_names,
+                     prior_list=None, Om_AP=None, window=None, M=None,
+                     range_selection=None, additional_prior=False,
+                     gaussian_prior=None):
+    '''
+    Funtion for evaluating Jeffreys prior.
+
+    Args:
+        theta (array) : Samples for which the prior should be evaluated.
+         Should have shape ``(n_samples, n_params)``.
+        engine (class) : Prediction engine. Should have ``derivs_for_jeff``
+         method.
+        kobs (array) : Array of k-bins of the data being used.
+        cinv (array) : Inverse covaraince matrix being used.
+        fixed_vals (dict) : Dictionary containing any fixed values.
+        ng (float) : Number density of data being used.
+        km (float) : km value.
+        jeff_names (list) : List if names of parameters that have a Jeffreys
+         prior.
+        prior_list (list) : Additional priors to be evaluated. If passed
+         ``additional_prior`` must be set to ``True``. Default is ``None``.
+        additional_prior (bool) : Wheter or not to evaluate any additional
+         priors. If ``True``, ``prior_list`` must not be ``None``. Default is
+         ``False``.
+        Om_AP (float) : The fiducial value of Om. Default is ``None``. If a 
+         value is passed AP will be included in prediction.
+        window (array) : Window function matrix. If ``None`` predictions will
+         not be convolved with the window function. Default is ``None``. 
+         ``Om_AP`` and ``M`` must also be passed.
+        M (array) : Wide angle matrix. If ``None`` wide angle effects will not
+         be included. If not ``None``, ``Om_AP`` and ``window`` must also be
+         passed. Default is ``None``.
+        range_selection (array) : Array of boolean elements for imposing scale
+         cuts. Only used if ``window`` and ``M`` are not ``None. Default is
+         ``None``.
+        gaussian_prior (array) : Gaussian prior to be inlcuded on the Fisher 
+         matrix when evaluating the Jefrreys prior.
+    '''
+
+    # Fix specified parameters
     theta = fix_params(np.atleast_2d(theta), fixed_vals)
 
-    # Sperate cosmo and bias params.
-    # Oc, Ob, h, As
-    cosmo = theta[:,:4]
-    # b1, c2, b3, c4, cct, cr1, cr2
-    bias = theta[:,4:11]
-    biasi = np.copy(bias)
-    # Make copies of c2 and c4.
-    c2 = np.copy(biasi[:,1])
-    c4 = np.copy(biasi[:,3])
-    # Use the copies to calculate b2 and b4
-    biasi[:,1] = (c2+c4)/np.sqrt(2)
-    biasi[:,3] = (c2-c4)/np.sqrt(2)
+    # Calculate derivatives with engine.
+    derivs = engine.derivs_for_jeff()
 
-    P11, Ploop, Pct = engine.predict_kernels(np.atleast_2d(cosmo), engine.kbins)
-
-    f = np.atleast_2d(halo_model_funcs.fN_vec((cosmo[:,0]+cosmo[:,1])/cosmo[:,2]**2,
-                                            engine.redshift)).T
-
-    derivs_list = []
-    jeff_names_i = jeff_names.copy()
-    if 'b1' in jeff_names_i:
-
-        # Sum individual components of the b1 derivative
-        # We use np.add.reduce() as it allows to sum multiple terms and include inline comments.
-        db1 = np.add.reduce([
-            2*biasi[:,0][None,:,None]*P11[:,:,0], # 2*b1
-            2*f[:,0][None,:,None]*P11[:,:,1], # 2*f
-            2*biasi[:,4][None,:,None]*Pct[:,:,0]/km**2, # 2*cct
-            2*biasi[:,5][None,:,None]*Pct[:,:,1]/km**2, # 2*cr1
-            2*biasi[:,6][None,:,None]*Pct[:,:,2]/km**2, # 2*cr2
-            Ploop[:,:,1],
-            2*biasi[:,0][None,:,None]*Ploop[:,:,5], # 2*b1
-            biasi[:,1][None,:,None]*Ploop[:,:,6], # b2
-            biasi[:,2][None,:,None]*Ploop[:,:,7], # b3
-            biasi[:,3][None,:,None]*Ploop[:,:,8] # b4
-        ])
-        # reshape so we have (nl, nsamples, nk)
-        db1 = np.hstack([db1[0,:,:], db1[1,:,:]])
-
-        derivs_list.append(db1[np.newaxis,:,:])
-
-        # Delete b1 from list of parameters with Jeff. prior.
-        # We do this because a key error will be thrown when calculating the derivs w.r.t linear params if we don't.
-        jeff_names_i.remove('b1')
-
-    if 'c2' in jeff_names_i:
-
-        dc2 = np.add.reduce([
-            Ploop[:,:,2]/np.sqrt(2), # 1/sqrt(2)
-            Ploop[:,:,4]/np.sqrt(2), # 1/sqrt(2)
-            biasi[:,0][None,:,None]*Ploop[:,:,6]/np.sqrt(2), # b1/sqrt(2)
-            biasi[:,0][None,:,None]*Ploop[:,:,8]/np.sqrt(2), # b1/sqrt(2)
-            (c2+c4)[None,:,None]*Ploop[:,:,9], # c2+c4
-            c2[None,:,None]*Ploop[:,:,10], # c2
-            (c2-c4)[None,:,None]*Ploop[:,:,11], # c2-c4
-        ])
-        dc2 = np.hstack([dc2[0,:,:], dc2[1,:,:]])
-
-        derivs_list.append(dc2[np.newaxis,:,:])
-
-        jeff_names_i.remove('c2')
-
-    if 'c4' in jeff_names_i:
-        raise NotImplementedError
-    
-    if len(jeff_names_i) == 0:
-        derivs = np.vstack(derivs_list)
-    else:
-        derivs = calc_P_G(Ploop, Pct, np.atleast_2d(biasi), f, ng, km, engine.kbins,
-                        marg_names=jeff_names_i)
-        derivs = np.vstack(derivs_list+[derivs])
-    
-    PG = derivs
-    PG = np.split(derivs, 2, axis=-1)
-
-    # Calculate DA and H0 for each cosmology.
-    DA = rsd.DA_vec(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
-                    engine.redshift)
-    Hubble = rsd.Hubble(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
-                        engine.redshift)
-
-    # Compute DA and H0 for Om_AP
-    DA_fid = rsd.DA_vec(Om_AP, engine.redshift)
-    Hubble_fid = rsd.Hubble(Om_AP, engine.redshift)
-    
-    # Calculate AP parameters.
-    qperp = DA/DA_fid
-    qpar = Hubble_fid/Hubble
-
-    # Inlcude AP effect.
-    PG_sys = np.zeros((PG[0].shape[0], cosmo.shape[0], PG[0].shape[-1]*2))
-    for i in range(cosmo.shape[0]):
-        PG_i = rsd.AP(np.stack([PG[0][:,i,:], PG[1][:,i,:]]),
-                        np.linspace(-1,1,301), engine.kbins, qperp[i],
-                        qpar[i])
-        PG_sys[:,i,:] = np.hstack(PG_i)
-
-    # Interpolate predictions over kbins needed to use matrices.
-    # Assume P4 = 0.
-    PG_sys = np.dstack([interp1d(engine.kbins, PG_sys[:,:,:engine.kbins.shape[0]],
-                                    kind='cubic', bounds_error=False,
-                                    fill_value='extrapolate')(np.linspace(0,0.4,400)), # P0
-                        interp1d(engine.kbins, PG_sys[:,:,engine.kbins.shape[0]:],
-                                    kind='cubic', bounds_error=False,
-                                    fill_value='extrapolate')(np.linspace(0,0.4,400)), #P2
-                        np.zeros((PG_sys.shape[0],PG_sys.shape[1],400)) # P4
-                        ])
-
-    # Do wide angle convolution.
-    PG_sys = np.einsum("ij, knj -> kni", M, PG_sys)
-
-    # Do window convolution.
-    PG_sys = np.einsum("ij, knj -> kni", window, PG_sys)
-
-    # Only select P0 and P2
-    pole_selection = [True, False, True, False, False]
-    PG_sys = PG_sys[:,:,np.repeat(pole_selection , 40)][:,:,np.concatenate(sum(pole_selection)*[range_selection])]
-
-    PG = PG_sys
-    derivs = PG_sys
-
+    # Initalise at zero
     pri_eval = np.zeros((cosmo.shape[0],))
+
+    # Loop over all samples
     for s in range(cosmo.shape[0]):
+        # Create empty square matirx with side lenghth equal to the number of 
+        # parameters with Jeffreys prior 
         Fm = np.zeros((derivs.shape[0], derivs.shape[0]))
         for i in range(derivs.shape[0]):
             for j in range(derivs.shape[0]):
+                # Caclulate appropriate product for each matrix element.
                 Fm[i,j] = np.dot(np.dot(derivs[i][s], cinv), derivs[j][s])
 
         if gaussian_prior is not None:
+            # Inlcude additional Gaussian prior if specified.
             Fm += gaussian_prior
 
+        # Finish evaluation of the Jeffreys prior.
         pri_eval[s] = np.log(np.sqrt(np.linalg.det(Fm)))
 
+    # If specified include evaluation of additional priors.
     if additional_prior:
         return pri_eval+evaluate_prior(theta, prior_list)
     else:
