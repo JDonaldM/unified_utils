@@ -622,3 +622,44 @@ def jeff_counter_sys(theta, engine, kobs, cinv, fixed_vals, ng, km, jeff_names,
         return pri_eval+evaluate_prior(theta, prior_list)
     else:
         return pri_eval
+
+def fix_params(theta, fixed_dict={'w_c':None, 'w_b':None, 'h':None,
+                                  'As':None, 'b1':None, 'c2':None,
+                                  'b3':None, 'c4':0., 'cct':None,
+                                  'cr1':None, 'cr2':0., 'ce1':None,
+                                  'cmono':0., 'cquad':None}):
+    '''
+    Function for fixing certain parameters of the EFTofLSS model. This function
+    already assumes a fixed value of ``ns``.
+
+    Args:
+        theta (array) : Array of shape ``(nsamp, nfree)`` containing ``nsamp``
+         sets of the ``nt`` free parameters.
+        fixed_dict (dict) : Dictionary of fixed parameter values.
+         Default is {'w_c':None, 'w_b':None, 'h':None, 'As':None, 'b1':None,
+         'c2':None, 'b3':None, 'c4':0., 'cct':None, 'cr1':None, 'cr2':0.,
+         'ce1':None, 'cmono':0., 'cquad':None}
+    '''
+
+    # Find fixed values.
+    parr = np.array(list(fixed_dict.values()))
+    fixed_select = parr != None
+
+    # If all the parameters have fixed values raise an error.
+    if sum(fixed_select) == parr.shape[0]:
+        raise ValueError("All parameters have been fixed.")
+
+    # If all the parameters are free simply return theta
+    if sum(fixed_select) == 0:
+        return theta
+
+    # Define array that will contain fixed and free parameters.
+    fixed_theta = np.zeros((theta.shape[0], parr.shape[0]))
+
+    # Fill array with free values.
+    fixed_theta[:,~fixed_select] = theta
+
+    # Fill with fixed values.
+    fixed_theta[:,fixed_select] = np.vstack(theta.shape[0]*[parr[fixed_select]])
+
+    return fixed_theta
