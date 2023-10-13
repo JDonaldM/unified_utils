@@ -595,7 +595,7 @@ def jeff_counter_sys(theta, engine, kobs, cinv, fixed_vals, ng, km, jeff_names,
 
     # Calculate derivatives with engine.
     derivs = engine.derivs_for_jeff(
-        theta,
+        np.copy(theta), # Make copy of theta to prevent change from deriv calc.
         kobs,
         ng,
         km,
@@ -607,10 +607,10 @@ def jeff_counter_sys(theta, engine, kobs, cinv, fixed_vals, ng, km, jeff_names,
     )
 
     # Initalise at zero
-    pri_eval = np.zeros((cosmo.shape[0],))
+    pri_eval = np.zeros((theta.shape[0],))
 
     # Loop over all samples
-    for s in range(cosmo.shape[0]):
+    for s in range(theta.shape[0]):
         # Create empty square matirx with side lenghth equal to the number of 
         # parameters with Jeffreys prior 
         Fm = np.zeros((derivs.shape[0], derivs.shape[0]))
