@@ -2,8 +2,6 @@ import numpy as np
 import matryoshka.emulator as MatEmu
 from scipy.interpolate import interp1d
 from matryoshka.training_funcs import LogScaler, UniformScaler
-#from classy import Class
-#from pybird_dev import pybird
 
 scaler_fn_dict = {'log':LogScaler, 'uniform':UniformScaler}
 
@@ -87,3 +85,153 @@ class emu_engine:
         Pct_pred = interp1d(self.P0_emu.Ploop.kbins, Pct_pred, axis=-1)(kobs)
         
         return P11_pred, Ploop_pred, Pct_pred
+
+    def derivs_for_jeff(self, theta, kobs, ng, km, jeff_names, Om_AP=None,
+                        window=None, M=None, range_selection=None):
+
+        # Calculation of derivatives only supported for linearly appearing
+        # nuiscance parameters.
+        # Loop over all nonlinear model parameters and raise error if any of
+        # them appear in jeff_names
+        for pi in ['w_c', 'w_b', 'h', 'A_s', 'b_1', 'c_2', 'c_4']:
+            if pi in jeff_names_names:
+                raise NotImplementedError(f"Calculation of derivative wrt {pi} is not implemented. Check configuration for {pi}.")
+
+        # Much of what follows is the same as in the marginalised likelihood 
+        # function.
+        #TODO: Work on inlcuding calculatio for marg like in engine to avoid
+        # all of this repeated code.
+        # Sperate cosmo and bias params.
+        # Oc, Ob, h, As
+        cosmo = theta[:,:4]
+        # b1, c2, b3, c4, cct, cr1, cr2
+        bias = theta[:,4:11]
+        # ce1, cmono, cquad
+        stoch = theta[:,11:]
+        
+        # Make copies of c2 and c4.
+        c2 = np.copy(bias[:,1])
+        c4 = np.copy(bias[:,3])
+        # Use the copies to calculate b2 and b4
+        bias[:,1] = (c2+c4)/np.sqrt(2)
+        bias[:,3] = (c2-c4)/np.sqrt(2)
+
+        # Divide by km here to make things a bit cleaner calculating PG.
+        bias[:,4:] = bias[:,4:]/km**2
+        stoch[:,1:] = stoch[:,1:]/km**2
+        
+        # Predict growth for each cosmology.
+        # Force shape to be (nsamp,1).
+        f = np.atleast_2d(halo_model_funcs.fN_vec((cosmo[:,0]+cosmo[:,1])/cosmo[:,2]**2,
+                                                engine.redshift)).T
+
+        # If the window and M matrix are not none the appropriate
+        # convolutions will be done.
+        if (window is not None) and (M is not None):
+            # Produce kernel predictions for each cosmology over full theory
+            # k-range.
+            # All have shape (nl, nsamp, nkern, nk)
+            P11_pred, Ploop_pred, Pct_pred = self.predict_kernels(
+                cosmo,
+                engine.kbins
+            )
+            
+            # Calculate the conributions from the linear parameters.
+            # poles=True, so PG is list of len l. Elements have shape
+            # (nkern, nsamp, nk).
+            PG = calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, engine.kbins,
+                        jeff_names, poles=True)
+
+            # Calculate DA and H0 for each cosmology.
+            DA = rsd.DA_vec(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
+                            engine.redshift)
+            Hubble = rsd.Hubble(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
+                                engine.redshift)
+            
+            # Compute DA and H0 for Om_AP
+            DA_fid = rsd.DA_vec(Om_AP, engine.redshift)
+            Hubble_fid = rsd.Hubble(Om_AP, engine.redshift)
+            
+            # Calculate AP parameters.
+            qperp = DA/DA_fid
+            qpar = Hubble_fid/Hubble
+
+            # Inlcude AP effect.
+            PG_sys = np.zeros((PG[0].shape[0], cosmo.shape[0], PG[0].shape[-1]*2))
+            for i in range(cosmo.shape[0]):
+                PG_i = rsd.AP(np.stack([PG[0][:,i,:], PG[1][:,i,:]]),
+                            np.linspace(-1,1,301), engine.kbins, qperp[i],
+                            qpar[i])
+                PG_sys[:,i,:] = np.hstack(PG_i)
+
+            # Interpolate predictions over kbins needed to use matrices.
+            # Assume P4 = 0.
+            PG_sys = np.dstack([interp1d(engine.kbins, PG_sys[:,:,:engine.kbins.shape[0]],
+                                        kind='cubic', bounds_error=False,
+                                        fill_value='extrapolate')(np.linspace(0,0.4,400)), # P0
+                                interp1d(engine.kbins, PG_sys[:,:,engine.kbins.shape[0]:],
+                                        kind='cubic', bounds_error=False,
+                                        fill_value='extrapolate')(np.linspace(0,0.4,400)), #P2
+                                np.zeros((PG_sys.shape[0],PG_sys.shape[1],400)) # P4
+                                ])
+
+            # Do wide angle convolution.
+            PG_sys = np.einsum("ij, knj -> kni", M, PG_sys)
+
+            # Do window convolution.
+            PG_sys = np.einsum("ij, knj -> kni", window, PG_sys)
+
+            # Only select P0 and P2
+            pole_selection = [True, False, True, False, False]
+            PG_sys = PG_sys[:,:,np.repeat(pole_selection , 40)][:,:,np.concatenate(sum(pole_selection)*[range_selection])]
+
+            PG = PG_sys
+
+        # If Om_AP is passed without window and M, only include AP.
+        elif Om_AP is not None:
+            # Produce kernel predictions for each cosmology at kobs.
+            # All have shape (nl, nsamp, nkern, nk)
+            P11_pred, Ploop_pred, Pct_pred = self.predict_kernels(cosmo, kobs)
+            
+            # Calculate the conributions from the linear parameters.
+            # poles=True, so PG is list of len l. Elements have shape
+            # (nkern, nsamp, nk).
+            PG = calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, kobs, jeff_names,
+                        poles=True)
+
+            # Calculate DA and H0 for each cosmology.
+            DA = rsd.DA_vec(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
+                            engine.redshift)
+            Hubble = rsd.Hubble(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
+                                engine.redshift)
+            
+            # Compute DA and H0 for Om_AP
+            DA_fid = rsd.DA_vec(Om_AP, engine.redshift)
+            Hubble_fid = rsd.Hubble(Om_AP, engine.redshift)
+            
+            # Calculate AP parameters.
+            qperp = DA/DA_fid
+            qpar = Hubble_fid/Hubble
+
+            # Inlcude AP effect.
+            PG_sys = np.zeros((PG[0].shape[0], cosmo.shape[0], PG[0].shape[-1]*2))
+            for i in range(cosmo.shape[0]):
+                PG_i = rsd.AP(np.stack([PG[0][:,i,:], PG[1][:,i,:]]),
+                            np.linspace(-1,1,301), kobs, qperp[i], qpar[i])
+                PG_sys[:,i,:] = np.hstack(PG_i)
+            
+            PG = PG_sys
+
+        # If none of the systematic variables are passed simply predict the kernels.
+        else:
+
+            # Produce kernel predictions for each cosmology at kobs.
+            # All have shape (nl, nsamp, nkern, nk)
+            P11_pred, Ploop_pred, Pct_pred = self.predict_kernels(cosmo, kobs)
+            
+            # Calculate the contributions from nonlinear parameters.
+            # poles=False, so PG is array with shape (nkern, nsamp, 2*nk).
+            PG = calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, kobs, jeff_names,
+                        poles=False)
+
+        return PG
