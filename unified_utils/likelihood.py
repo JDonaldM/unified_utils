@@ -3,7 +3,7 @@ from matryoshka import eft_funcs
 from matryoshka import halo_model_funcs
 from matryoshka import rsd
 from scipy.interpolate import interp1d
-from .utils import fix_params
+from unified_utils.utils import fix_params
 
 def marg_like(theta, kobs, y, icov, icovd, ng, km, bg_prior, fixed_vals,
               engine, marg_names, Om_AP=None, window=None, M=None, 

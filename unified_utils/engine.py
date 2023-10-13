@@ -2,6 +2,7 @@ import numpy as np
 import matryoshka.emulator as MatEmu
 from scipy.interpolate import interp1d
 from matryoshka.training_funcs import LogScaler, UniformScaler
+from matryoshka import halo_model_funcs
 
 scaler_fn_dict = {'log':LogScaler, 'uniform':UniformScaler}
 
@@ -94,7 +95,7 @@ class emu_engine:
         # Loop over all nonlinear model parameters and raise error if any of
         # them appear in jeff_names
         for pi in ['w_c', 'w_b', 'h', 'A_s', 'b_1', 'c_2', 'c_4']:
-            if pi in jeff_names_names:
+            if pi in jeff_names:
                 raise NotImplementedError(f"Calculation of derivative wrt {pi} is not implemented. Check configuration for {pi}.")
 
         # Much of what follows is the same as in the marginalised likelihood 
@@ -122,8 +123,10 @@ class emu_engine:
         
         # Predict growth for each cosmology.
         # Force shape to be (nsamp,1).
-        f = np.atleast_2d(halo_model_funcs.fN_vec((cosmo[:,0]+cosmo[:,1])/cosmo[:,2]**2,
-                                                engine.redshift)).T
+        f = np.atleast_2d(halo_model_funcs.fN_vec(
+            (cosmo[:,0]+cosmo[:,1])/cosmo[:,2]**2,
+            self.redshift
+        )).T
 
         # If the window and M matrix are not none the appropriate
         # convolutions will be done.
@@ -133,24 +136,37 @@ class emu_engine:
             # All have shape (nl, nsamp, nkern, nk)
             P11_pred, Ploop_pred, Pct_pred = self.predict_kernels(
                 cosmo,
-                engine.kbins
+                self.kbins
             )
             
             # Calculate the conributions from the linear parameters.
             # poles=True, so PG is list of len l. Elements have shape
             # (nkern, nsamp, nk).
-            PG = calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, engine.kbins,
-                        jeff_names, poles=True)
+            PG = calc_P_G(
+                Ploop_pred,
+                Pct_pred,
+                bias,
+                f,
+                ng,
+                km,
+                self.kbins,
+                jeff_names,
+                poles=True
+                )
 
             # Calculate DA and H0 for each cosmology.
-            DA = rsd.DA_vec(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
-                            engine.redshift)
-            Hubble = rsd.Hubble(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
-                                engine.redshift)
+            DA = rsd.DA_vec(
+                cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
+                self.redshift
+            )
+            Hubble = rsd.Hubble(
+                cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
+                self.redshift
+            )
             
             # Compute DA and H0 for Om_AP
-            DA_fid = rsd.DA_vec(Om_AP, engine.redshift)
-            Hubble_fid = rsd.Hubble(Om_AP, engine.redshift)
+            DA_fid = rsd.DA_vec(Om_AP, self.redshift)
+            Hubble_fid = rsd.Hubble(Om_AP, self.redshift)
             
             # Calculate AP parameters.
             qperp = DA/DA_fid
@@ -159,17 +175,26 @@ class emu_engine:
             # Inlcude AP effect.
             PG_sys = np.zeros((PG[0].shape[0], cosmo.shape[0], PG[0].shape[-1]*2))
             for i in range(cosmo.shape[0]):
-                PG_i = rsd.AP(np.stack([PG[0][:,i,:], PG[1][:,i,:]]),
-                            np.linspace(-1,1,301), engine.kbins, qperp[i],
-                            qpar[i])
+                PG_i = rsd.AP(
+                    np.stack(
+                        [
+                            PG[0][:,i,:],
+                            PG[1][:,i,:]
+                        ]
+                    ),
+                    np.linspace(-1,1,301),
+                    self.kbins,
+                    qperp[i],
+                    qpar[i]
+                )
                 PG_sys[:,i,:] = np.hstack(PG_i)
 
             # Interpolate predictions over kbins needed to use matrices.
             # Assume P4 = 0.
-            PG_sys = np.dstack([interp1d(engine.kbins, PG_sys[:,:,:engine.kbins.shape[0]],
+            PG_sys = np.dstack([interp1d(self.kbins, PG_sys[:,:,:self.kbins.shape[0]],
                                         kind='cubic', bounds_error=False,
                                         fill_value='extrapolate')(np.linspace(0,0.4,400)), # P0
-                                interp1d(engine.kbins, PG_sys[:,:,engine.kbins.shape[0]:],
+                                interp1d(self.kbins, PG_sys[:,:,self.kbins.shape[0]:],
                                         kind='cubic', bounds_error=False,
                                         fill_value='extrapolate')(np.linspace(0,0.4,400)), #P2
                                 np.zeros((PG_sys.shape[0],PG_sys.shape[1],400)) # P4
@@ -196,18 +221,31 @@ class emu_engine:
             # Calculate the conributions from the linear parameters.
             # poles=True, so PG is list of len l. Elements have shape
             # (nkern, nsamp, nk).
-            PG = calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, kobs, jeff_names,
-                        poles=True)
+            PG = calc_P_G(
+                Ploop_pred,
+                Pct_pred,
+                bias,
+                f,
+                ng,
+                km,
+                kobs,
+                jeff_names,
+                poles=True
+            )
 
             # Calculate DA and H0 for each cosmology.
-            DA = rsd.DA_vec(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
-                            engine.redshift)
-            Hubble = rsd.Hubble(cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
-                                engine.redshift)
+            DA = rsd.DA_vec(
+                cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
+                self.redshift
+            )
+            Hubble = rsd.Hubble(
+                cosmo[:,0]/cosmo[:,2]**2+cosmo[:,1]/cosmo[:,2]**2,
+                self.redshift
+            )
             
             # Compute DA and H0 for Om_AP
-            DA_fid = rsd.DA_vec(Om_AP, engine.redshift)
-            Hubble_fid = rsd.Hubble(Om_AP, engine.redshift)
+            DA_fid = rsd.DA_vec(Om_AP, self.redshift)
+            Hubble_fid = rsd.Hubble(Om_AP, self.redshift)
             
             # Calculate AP parameters.
             qperp = DA/DA_fid

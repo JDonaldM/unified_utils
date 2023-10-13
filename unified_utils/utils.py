@@ -594,7 +594,17 @@ def jeff_counter_sys(theta, engine, kobs, cinv, fixed_vals, ng, km, jeff_names,
     theta = fix_params(np.atleast_2d(theta), fixed_vals)
 
     # Calculate derivatives with engine.
-    derivs = engine.derivs_for_jeff()
+    derivs = engine.derivs_for_jeff(
+        theta,
+        kobs,
+        ng,
+        km,
+        jeff_names,
+        Om_AP,
+        window, 
+        M,
+        range_selection
+    )
 
     # Initalise at zero
     pri_eval = np.zeros((cosmo.shape[0],))
