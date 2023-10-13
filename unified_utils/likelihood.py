@@ -92,13 +92,13 @@ def marg_like(theta, kobs, y, icov, icovd, ng, km, bg_prior, fixed_vals,
 
         # Calculate the contributions from nonlinear parameters.
         # poles=True, so P_NG is list of len l. Elements have shape (nsamp, nk).
-        P_NG = calc_P_NG(P11_pred, Ploop_pred, Pct_pred, bias, f,
+        P_NG = engine.calc_P_NG(P11_pred, Ploop_pred, Pct_pred, bias, f,
                          stoch=stoch, ng=ng, kobs=engine.kbins, poles=True)
         
         # Calculate the conributions from the linear parameters.
         # poles=True, so PG is list of len l. Elements have shape
         # (nkern, nsamp, nk).
-        PG = calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, engine.kbins,
+        PG = engine.calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, engine.kbins,
                       marg_names, poles=True)
 
         # Calculate DA and H0 for each cosmology.
@@ -173,13 +173,13 @@ def marg_like(theta, kobs, y, icov, icovd, ng, km, bg_prior, fixed_vals,
 
         # Calculate the contributions from nonlinear parameters.
         # poles=True, so P_NG is list of len l. Elements have shape (nsamp, nk).
-        P_NG = calc_P_NG(P11_pred, Ploop_pred, Pct_pred, bias, f, stoch=stoch,
+        P_NG = engine.calc_P_NG(P11_pred, Ploop_pred, Pct_pred, bias, f, stoch=stoch,
                          ng=ng, kobs=kobs, poles=True)
         
         # Calculate the conributions from the linear parameters.
         # poles=True, so PG is list of len l. Elements have shape
         # (nkern, nsamp, nk).
-        PG = calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, kobs, marg_names,
+        PG = engine.calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, kobs, marg_names,
                       poles=True)
 
         # Calculate DA and H0 for each cosmology.
@@ -220,12 +220,12 @@ def marg_like(theta, kobs, y, icov, icovd, ng, km, bg_prior, fixed_vals,
 
         # Calculate the contributions from nonlinear parameters.
         # poles=False, so P_NG is array with shape (nsamp, 2*nk).
-        P_NG = calc_P_NG(P11_pred, Ploop_pred, Pct_pred, bias, f, stoch=stoch,
+        P_NG = engine.calc_P_NG(P11_pred, Ploop_pred, Pct_pred, bias, f, stoch=stoch,
                          ng=ng, kobs=kobs, poles=False)
         
         # Calculate the contributions from nonlinear parameters.
         # poles=False, so PG is array with shape (nkern, nsamp, 2*nk).
-        PG = calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, kobs, marg_names,
+        PG = engine.calc_P_G(Ploop_pred, Pct_pred, bias, f, ng, km, kobs, marg_names,
                       poles=False)
     
     # Calculate eq 26 from arXiv:2003.07956 for each cosmo.
@@ -248,80 +248,6 @@ def marg_like(theta, kobs, y, icov, icovd, ng, km, bg_prior, fixed_vals,
            + np.log(np.linalg.det(F2/(2*np.pi)))
     
     return -0.5*chi2
-
-def calc_P_NG(P11, Ploop, Pct, bias, f, stoch, ng, kobs, poles=False):
-    '''
-    Calculate terms that contain no linearly appearing parameters.
-
-    Args:
-        P11 (array) : Array containing P11 kernels.
-        Ploop (array) : Arary containing Ploop kernels.
-        Pct (array) : Array containing Pct kernels.
-        bias (array) : Bias paramters and counterterms.
-        f (array) : Growth.
-        stoch (array) : Stochastic counterterms.
-        ng (float) : Number density of data.
-        kobs (array) : k-bins of data being fit. Should have shape ``(nk,)``.
-    '''
-    
-    # Make predictions for nonlinear contributions.
-    P_NG_0 = eft_funcs.multipole_vec([P11[0], Ploop[0], Pct[0]], bias, f,
-                                     stochastic=stoch, ng=ng, multipole=0,
-                                     kbins=kobs)
-    P_NG_2 = eft_funcs.multipole_vec([P11[1], Ploop[1], Pct[1]], bias, f,
-                                     stochastic=stoch, ng=ng, multipole=2,
-                                     kbins=kobs)
-    
-    # Return single array for both multipoles or seperate arrays for each
-    # multipole.
-    if poles:
-        return P_NG_0, P_NG_2
-    else:
-        return np.hstack([P_NG_0, P_NG_2])
-
-def calc_P_G(Ploop, Pct, bias, f, ng, km, kobs, marg_names, poles=False):
-    '''
-    Calculate terms that contain linearly appearing parameters.
-
-    Args:
-        Ploop (array) : Arary containing Ploop kernels.
-        Pct (array) : Array containing Pct kernels.
-        bias (array) : Bias paramters and counterterms.
-        f (array) : Growth.
-        ng (float) : Number density of data.
-        km (float) : Value of km.
-        kobs (array) : k-bins of data being fit. Should have shape ``(nk,)``.
-        marg_names (list) : Names of parameters to be analytically marginalised
-    '''
-    
-    # Define 'kernels' for the stochastic terms.
-    sudo_kernel_ce1 = np.array([np.ones((Ploop.shape[1], kobs.shape[0]))/ng,
-                                np.zeros((Ploop.shape[1], kobs.shape[0]))])
-    sudo_kernel_cquad = np.array([np.zeros((Ploop.shape[1], kobs.shape[0])),
-                                  np.stack(Ploop.shape[1]*[kobs**2/ng/km**2])])
-    sudo_kernel_cmono = np.array([np.stack(Ploop.shape[1]*[kobs**2/ng/km**2]),
-                                  np.zeros((Ploop.shape[1], kobs.shape[0]))])
-
-    # Make single array with all possible linear parameter kernels.
-    P_G = np.array([Ploop[:,:,3,:]+Ploop[:,:,7]*bias[:,0][None,:,None], #b3
-                    (2*f[:,0][None,:,None]*Pct[:,:,3]+2*bias[:,0][None,:,None]*Pct[:,:,0])/km**2, #cct
-                    (2*f[:,0][None,:,None]*Pct[:,:,4]+2*bias[:,0][None,:,None]*Pct[:,:,1])/km**2, #cr1
-                    (2*f*Pct[:,:,5]+2*bias[:,0][None,:,None]*Pct[:,:,2])/km**2, #cr2
-                    sudo_kernel_ce1, #ce1
-                    sudo_kernel_cmono, #cmono
-                    sudo_kernel_cquad, #cquad
-                   ])
-
-    # Find indexes into P_G for selected kernels.
-    id_dict = {"b3":0, "cct":1, "cr1":2, "cr2":3, "ce1":4, "cmono":5, "cquad":6}
-    kern_select = [id_dict[i] for i in marg_names]
-    
-    # Return single array for both multipoles or seperate arrays for each
-    # multipole.
-    if poles:
-        return P_G[kern_select,0,:,:], P_G[kern_select,1,:,:]
-    else:
-        return np.dstack([P_G[kern_select,0,:,:], P_G[kern_select,1,:,:]])
 
 def full_like(theta, kobs, y, icov, ng, km, fixed_vals, engine, Om_AP=None,
               window=None, M=None, range_selection=None, perturb_cond=False):
@@ -713,13 +639,13 @@ def combo_marg_like_joint(theta, data, samples, ngs, redshifts, km, fixed_params
 
         # Calculate the contributions from nonlinear parameters.
         # poles=True, so P_NG is list of len l. Elements have shape (nsamp, nk).
-        P_NG = calc_P_NG(P11_pred, Ploop_pred, Pct_pred, bias, f,
+        P_NG = engine.calc_P_NG(P11_pred, Ploop_pred, Pct_pred, bias, f,
                          stoch=stoch, ng=ng_i, kobs=engine_i.kbins, poles=True)
         
         # Calculate the conributions from the linear parameters.
         # poles=True, so PG is list of len l. Elements have shape
         # (nkern, nsamp, nk).
-        PG = calc_P_G(Ploop_pred, Pct_pred, bias, f, ng_i, km, engine_i.kbins,
+        PG = engine.calc_P_G(Ploop_pred, Pct_pred, bias, f, ng_i, km, engine_i.kbins,
                       marg_names[i], poles=True)
 
         # Calculate DA and H0 for each cosmology.
