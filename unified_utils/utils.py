@@ -7,7 +7,6 @@ import sys
 import inspect
 import os
 from pathlib import Path
-from .likelihood import calc_P_G, fix_params
 from matryoshka import halo_model_funcs
 from matryoshka import rsd
 from scipy.interpolate import interp1d
