@@ -1,7 +1,6 @@
 from unified_utils import utils
 import pytest
 from scipy.stats import norm, uniform, truncnorm
-from unified_utils import likelihood
 import numpy as np
 import glob
 import yaml
@@ -157,19 +156,25 @@ class TestLoadLike:
         '''Make sure bad function name error is raised.'''
 
         with pytest.raises(KeyError):
-            utils.import_loglikelihood(glob.glob("../likelihood.py")[0], "random")
+            utils.import_loglikelihood(
+                glob.glob("toy_likelihood.py")[0],
+                "random"
+            )
 
     def test_works(self):
         '''Make sure function actually works.'''
 
         # Import a fix_params function.
-        fix_from_file = utils.import_loglikelihood(glob.glob("../likelihood.py")[0], "fix_params")
+        toy_likelihood = utils.import_loglikelihood(
+            glob.glob("toy_likelihood.py")[0],
+            "toy_likelihood"
+        )
 
         # Generate some data for the function.
         theta = np.random.randn(10,11)
 
         # Make sure the output agrees with the function imported normally.
-        assert np.all(fix_from_file(theta)==likelihood.fix_params(theta))
+        assert np.all(toy_likelihood(theta)==theta+2)
 
 class TestPriorEval:
 
