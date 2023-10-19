@@ -7,8 +7,6 @@ import sys
 import inspect
 import os
 from pathlib import Path
-from matryoshka import halo_model_funcs
-from matryoshka import rsd
 from scipy.interpolate import interp1d
 
 def data_loader(redshift, split, use_mock=False, pole_selection=[True, False, True, False, False], norm_cov=1.,
