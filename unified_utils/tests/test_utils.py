@@ -312,12 +312,18 @@ class TestLoadEngine:
     def test_works(self):
         '''Make sure function actually works.'''
 
-        # Import a fix_params function.
-        emu_engine = utils.import_loglikelihood(glob.glob("../engine.py")[0],
-                                                   "emu_engine", engine_or_like='engine')
+        # Import the toy engine.
+        engine_from_file = utils.import_loglikelihood(
+            glob.glob("toy_engine.py")[0],
+            "toy_engine",
+            engine_or_like='engine'
+        )
+
+        toy_engine = engine_from_file()
 
         # Make sure we have an object.
-        assert emu_engine.mro()[1]==object
+        assert engine_from_file.mro()[1]==object
 
         # Make sure this object has a predict function as expected
-        assert 'predict' in dict(inspect.getmembers(emu_engine, inspect.isfunction))
+        assert 'predict' in dict(inspect.getmembers(engine_from_file, inspect.isfunction))
+        assert toy_engine.predict() == 50
