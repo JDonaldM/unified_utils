@@ -6,6 +6,10 @@ import glob
 import yaml
 import os
 import inspect
+from pathlib import Path
+
+THIS_DIR = Path(__file__).parent
+THIS_DIR = str(THIS_DIR.absolute())
 
 class TestEmuBoundsCheck:
 
@@ -157,7 +161,7 @@ class TestLoadLike:
 
         with pytest.raises(KeyError):
             utils.import_loglikelihood(
-                glob.glob("toy_likelihood.py")[0],
+                glob.glob("unified_utils/tests/toy_likelihood.py")[0],
                 "random"
             )
 
@@ -166,7 +170,7 @@ class TestLoadLike:
 
         # Import a fix_params function.
         toy_likelihood = utils.import_loglikelihood(
-            glob.glob("toy_likelihood.py")[0],
+            glob.glob("unified_utils/tests/toy_likelihood.py")[0],
             "toy_likelihood"
         )
 
@@ -278,20 +282,61 @@ class TestPocoBounds:
 
 class TestFname:
 
-    with open("default.yaml", "r") as stream:
-        config = yaml.safe_load(stream)
+    config = {
+        'Setup': {
+            'bridgez': True,
+            'data_type': 'obs',
+            'engine': {
+                'engine_kwargs': {
+                    'P110_scaler': 'log',
+                    'P112_scaler': 'log',
+                    'Pct0_scaler': 'log',
+                    'Pct2_scaler': 'log',
+                    'Ploop0_scaler': 'log',
+                    'Ploop2_scaler': 'log',
+                    'path_to_model': '/some_model_path/',
+                    'version': 'custom'
+                },
+                'function': 'some_engine',
+                'path': '/some_engine_path/some_engine_fn.py',
+                'type': 'emulator'
+            },
+            'kmax': 0.2,
+            'kmin': 0.01,
+            'likelihood': {
+            'function': 'some_like',
+                'path': '/some_likelihood_path/some_likelihood_fn.py'
+            },
+            'norm_cov': 1.0,
+            'redshift': 0.096,
+            'sampler': {
+                'nsamples': 50000,
+                'nwalk': 1000,
+                'save_like': True
+            },
+            'save': {
+                'diagnostics': True,
+                'fname': 'chain.highAs.modelj',
+                'fname_tags': True,
+                'overwrite': True,
+                'path': THIS_DIR},
+            'split': 'NGC'
+        }
+    }
 
     def test_wo_tags(self):
 
         fname = utils.make_fname(self.config['Setup'], use_tags=False, overwrite=True)
         print(fname)
-        assert fname=="/Users/jamie/Desktop/GitHubProjects/unified_analysis/unified_utils/tests/chain_from_test.npy"
+        assert fname==f"{THIS_DIR}/chain.highAs.modelj.npy"
 
     def test_wo_tags_overwrite(self):
 
         # Make file name without tags.
         fname = utils.make_fname(self.config['Setup'], use_tags=False, overwrite=True)
+        print(fname)
 
+        #fname = fname.split("/")[-1]
         # Save empty file.
         os.system(f"touch {fname}")
 
@@ -310,7 +355,7 @@ class TestFname:
         # Make file name with tags.
         fname = utils.make_fname(self.config['Setup'], use_tags=True, overwrite=True)
         #print(fname)
-        assert fname=="/Users/jamie/Desktop/GitHubProjects/unified_analysis/unified_utils/tests/chain_from_test--0.61--NGC--0.01--0.2--pybird--1.0--likelihood.py--log_like--emulator--engine.py--emu_engine.npy"
+        assert fname==f"{THIS_DIR}/chain.highAs.modelj--bridgez--obs--some_engine--some_engine_fn.py--emulator--0.2--0.01--some_like--some_likelihood_fn.py--1.0--0.096--50000--1000--save_like--NGC.npy"
 
 class TestLoadEngine:
 
@@ -319,7 +364,7 @@ class TestLoadEngine:
 
         # Import the toy engine.
         engine_from_file = utils.import_loglikelihood(
-            glob.glob("toy_engine.py")[0],
+            glob.glob("unified_utils/tests/toy_engine.py")[0],
             "toy_engine",
             engine_or_like='engine'
         )
