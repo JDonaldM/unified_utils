@@ -37,8 +37,6 @@ extensions = ['sphinx.ext.napoleon',
               'sphinx.ext.intersphinx',
               'sphinx.ext.mathjax',
               'sphinx.ext.coverage',
-              'nbsphinx',
-              'IPython.sphinxext.ipython_console_highlighting',
               'sphinx_rtd_theme']
 
 # Napoleon settings
