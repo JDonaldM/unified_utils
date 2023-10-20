@@ -35,13 +35,13 @@ def data_loader(redshift, split, use_mock=False, pole_selection=[True, False, Tr
         mock_type (str) : Tag for the ``PyBird`` mocks. The mocks produced in
          arXiv:2307.07475 all have the tag ``P18``.
     Returns:
-        kbins_fit (array) : The k-bins. Has shape (nki,).
-        pk_data_fit (array) : The selected multipoles. Has shape (3*nki,).
-        cov_fit (array): Covariance matrix. Has shape (3*nki, 3*nki).
-        window (array) : Window function matrix. Has shape (200, 2000).
-        M (array) : Wide angle matrix. Has shape (1200, 2000).
+        kbins_fit (array) : The k-bins. Has shape ``(nki,)``.
+        pk_data_fit (array) : The selected multipoles. Has shape ``(3*nki,)``.
+        cov_fit (array): Covariance matrix. Has shape ``(3*nki, 3*nki)``.
+        window (array) : Window function matrix. Has shape ``(200, 2000)``.
+        M (array) : Wide angle matrix. Has shape ``(1200, 2000)``.
         range_selection (array): Array of boolean elements that cut the
-         origonal data. Has shape (nkj,).
+         origonal data. Has shape ``(nkj,)``.
         Nmocks (int) : The number of mocks used to calculate the covariance.
     '''
 
@@ -183,7 +183,8 @@ def check_emu_bounds(param_dict, emu_bounds):
         emu_bounds (dict) : Nested dictionary containing the hard bounds of
          of the emulator training space.
     Returns:
-        ``param_dict`` with all appearances of ``'emu'`` replaced with floats and all extremes checked.
+        param_dict (dict) : Same as ``param_dict`` with all appearances of
+         ``'emu'`` replaced with floats and all extremes checked.
     '''
 
     # Check params in param_dict
@@ -233,9 +234,9 @@ def make_prior_list(param_dict):
     Args:
         param_dict (dict) : Nested dictionary for parameters of model.
     Returns:
-        List of ``scipy.stats`` distributions corresponding to the prior
-        each parameter. Will have length equal to the number of parameters
-        in ``param_dict``.
+        prior_list (list) : List of ``scipy.stats`` distributions corresponding
+         to the prior each parameter. Will have length equal to the number of
+         parameters in ``param_dict``.
     '''
 
     # Define empty list that will form the prior.
@@ -291,8 +292,8 @@ def evaluate_prior(theta, prior_list):
          parameter. Each element should be a class with ``.logpdf()``
          method.
     Returns:
-        Array with shape ``(nsamp,)`` containing the prior evaluation
-        for each sample.
+        lp (array) : Array with shape ``(nsamp,)`` containing the prior 
+         evaluation for each sample.
     '''
 
     # Initlaise at zero.
@@ -317,6 +318,9 @@ def sample_prior(prior_list, Nsamp, random_state=None):
         Nsamp (int) : The number of samples to generate.
         random_state (int) : Random state for sample generation.
          Default is ``None``.
+    Returns:
+        prior_samples (array) : Array of shape ``(len(prior_list), Nsamp)``
+         containing the prior samples.
     '''
 
     # Initalise as empty list
@@ -343,7 +347,7 @@ def import_loglikelihood(path, fn_name, engine_or_like='like'):
         engine_or_like (str) : Are you loading a likelihood function or a
          predictione engine? Can be either ``'like'`` or ``'engine'``.
     Returns:
-        Likelihood function or engine class.
+        fn (object) : Likelihood function or engine class.
     '''
 
     # Check path
@@ -377,8 +381,9 @@ def poco_bounds(param_dict):
     Args:
         param_dict (dict) : Nested dictionary for parameters of model.
     Returns:
-        Array with shape ``(nparam, 2)`` containing the upper and lower bounds of the
-        priors. For priors that don't have hard bounds ``np.nan`` will be used.
+        poco_bounds (array): Array with shape ``(nparam, 2)`` containing the
+         upper and lower bounds of the priors. For priors that don't have hard 
+         bounds ``np.nan`` will be used.
     '''
 
     bound_list=[]
@@ -419,7 +424,7 @@ def make_fname(setup_dict, use_tags=True, overwrite=False):
          This can make file names quite long so set ``False`` to turn this
          off. Default is ``True``.
     Returns:
-        The name for a ``.npy`` file.
+        fname (string): The name for a ``.npy`` file.
     '''
 
     # Extract save directory and start of file name.
@@ -487,16 +492,21 @@ def make_fname(setup_dict, use_tags=True, overwrite=False):
         
 def special_treatment(param_dict):
     '''
-    Determine if parameters need spcial treatment, like analytic marginalisation or Jeffreys prior.
+    Determine if parameters need spcial treatment, like analytic marginalisation
+    or Jeffreys prior.
 
     Args:
-        param_dict (dict) : Dictionary defining the parameters and priors as expected in the ``.yaml`` config file.
+        param_dict (dict) : Dictionary defining the parameters and priors as
+         expected in the ``.yaml`` config file.
     Returns:
-        marg_cov (array) : Inverse prior matrix for marginalised parameters. Will have shape
+        marg_cov (array) : Inverse prior matrix for marginalised parameters. 
+         Will have shape
          ``(len(marg_names), len(marg_names))``.
         marg_names (list) : List of names of marginalised parameters.
-        jeff_cov (array) : Inverse prior matrix for marginalised parameters to be used in the Jeffreys prior. Will have
-         shape ``(len(jeff_names), len(jeff_names))``. This shape may be different from ``marg_cov``.
+        jeff_cov (array) : Inverse prior matrix for marginalised parameters to 
+         be used in the Jeffreys prior. Will have
+         shape ``(len(jeff_names), len(jeff_names))``. This shape may be 
+         different from ``marg_cov``.
         jeff_names (list) : List of names of parameters with Jeffreys prior.        
     '''
 
@@ -586,6 +596,9 @@ def jeff_counter_sys(theta, engine, kobs, cinv, fixed_vals, ng, km, jeff_names,
          ``None``.
         gaussian_prior (array) : Gaussian prior to be inlcuded on the Fisher 
          matrix when evaluating the Jefrreys prior.
+    Returns:
+        lp (array) : Array with shape ``(nsamp,)`` containing the prior 
+         evaluation for each sample.
     '''
 
     # Fix specified parameters
@@ -641,11 +654,14 @@ def fix_params(theta, fixed_dict={'w_c':None, 'w_b':None, 'h':None,
 
     Args:
         theta (array) : Array of shape ``(nsamp, nfree)`` containing ``nsamp``
-         sets of the ``nt`` free parameters.
-        fixed_dict (dict) : Dictionary of fixed parameter values.
+         sets of the ``nfree`` free parameters.
+        fixed_dict (dict) : Dictionary of fixed ``nfix`` parameter values.
          Default is {'w_c':None, 'w_b':None, 'h':None, 'As':None, 'b1':None,
          'c2':None, 'b3':None, 'c4':0., 'cct':None, 'cr1':None, 'cr2':0.,
          'ce1':None, 'cmono':0., 'cquad':None}
+    Returns:
+        theta_w_fixed (array) : Array of shape ``(nsamp, nfree+nfix)`` 
+         containing ``theta`` and ``nsamp`` repeats of the fixed parameters.
     '''
 
     # Find fixed values.

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prior utilities &mdash; unified_utils 0.0.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pocoMC utilities" href="poco_api.html" />
+    <link rel="prev" title="API Reference" href="../api.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> unified_utils
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Prior utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="poco_api.html"><code class="docutils literal notranslate"><span class="pre">pocoMC</span></code> utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="infer_api.html">Inference utilities</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">unified_utils</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../api.html">API Reference</a> &raquo;</li>
+      <li>Prior utilities</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/prior_api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="prior-utilities">
+<h1>Prior utilities<a class="headerlink" href="#prior-utilities" title="Permalink to this headline"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="unified_utils.utils.make_prior_list">
+<span class="sig-prename descclassname"><span class="pre">unified_utils.utils.</span></span><span class="sig-name descname"><span class="pre">make_prior_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#unified_utils.utils.make_prior_list" title="Permalink to this definition"></a></dt>
+<dd><p>Function for constructing prior from the config file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>param_dict</strong> (<em>dict</em>) – Nested dictionary for parameters of model.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>prior_list</strong> (<em>list</em>) – List of <code class="docutils literal notranslate"><span class="pre">scipy.stats</span></code> distributions corresponding
+to the prior each parameter. Will have length equal to the number of
+parameters in <code class="docutils literal notranslate"><span class="pre">param_dict</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="unified_utils.utils.evaluate_prior">
+<span class="sig-prename descclassname"><span class="pre">unified_utils.utils.</span></span><span class="sig-name descname"><span class="pre">evaluate_prior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#unified_utils.utils.evaluate_prior" title="Permalink to this definition"></a></dt>
+<dd><p>Evaluate the log prior given a set of parameters and list of prior
+distributions for each parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array</em>) – Parameter sets for which the prior should be
+evaluated. Should have shape <code class="docutils literal notranslate"><span class="pre">(nsamp,</span> <span class="pre">nparam)</span></code>.</p></li>
+<li><p><strong>prior_list</strong> (<em>list</em>) – List of prior distribtuions for each
+parameter. Each element should be a class with <code class="docutils literal notranslate"><span class="pre">.logpdf()</span></code>
+method.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>lp</strong> (<em>array</em>) – Array with shape <code class="docutils literal notranslate"><span class="pre">(nsamp,)</span></code> containing the prior
+evaluation for each sample.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="unified_utils.utils.jeff_counter_sys">
+<span class="sig-prename descclassname"><span class="pre">unified_utils.utils.</span></span><span class="sig-name descname"><span class="pre">jeff_counter_sys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kobs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cinv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_vals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">km</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jeff_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Om_AP</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">M</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">range_selection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gaussian_prior</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#unified_utils.utils.jeff_counter_sys" title="Permalink to this definition"></a></dt>
+<dd><p>Funtion for evaluating Jeffreys prior.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>array</em>) – Samples for which the prior should be evaluated.
+Should have shape <code class="docutils literal notranslate"><span class="pre">(n_samples,</span> <span class="pre">n_params)</span></code>.</p></li>
+<li><p><strong>engine</strong> (<em>class</em>) – Prediction engine. Should have <code class="docutils literal notranslate"><span class="pre">derivs_for_jeff</span></code>
+method.</p></li>
+<li><p><strong>kobs</strong> (<em>array</em>) – Array of k-bins of the data being used.</p></li>
+<li><p><strong>cinv</strong> (<em>array</em>) – Inverse covaraince matrix being used.</p></li>
+<li><p><strong>fixed_vals</strong> (<em>dict</em>) – Dictionary containing any fixed values.</p></li>
+<li><p><strong>ng</strong> (<em>float</em>) – Number density of data being used.</p></li>
+<li><p><strong>km</strong> (<em>float</em>) – km value.</p></li>
+<li><p><strong>jeff_names</strong> (<em>list</em>) – List if names of parameters that have a Jeffreys
+prior.</p></li>
+<li><p><strong>prior_list</strong> (<em>list</em>) – Additional priors to be evaluated. If passed
+<code class="docutils literal notranslate"><span class="pre">additional_prior</span></code> must be set to <code class="docutils literal notranslate"><span class="pre">True</span></code>. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>additional_prior</strong> (<em>bool</em>) – Wheter or not to evaluate any additional
+priors. If <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">prior_list</span></code> must not be <code class="docutils literal notranslate"><span class="pre">None</span></code>. Default is
+<code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>Om_AP</strong> (<em>float</em>) – The fiducial value of Om. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>. If a
+value is passed AP will be included in prediction.</p></li>
+<li><p><strong>window</strong> (<em>array</em>) – Window function matrix. If <code class="docutils literal notranslate"><span class="pre">None</span></code> predictions will
+not be convolved with the window function. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.
+<code class="docutils literal notranslate"><span class="pre">Om_AP</span></code> and <code class="docutils literal notranslate"><span class="pre">M</span></code> must also be passed.</p></li>
+<li><p><strong>M</strong> (<em>array</em>) – Wide angle matrix. If <code class="docutils literal notranslate"><span class="pre">None</span></code> wide angle effects will not
+be included. If not <code class="docutils literal notranslate"><span class="pre">None</span></code>, <code class="docutils literal notranslate"><span class="pre">Om_AP</span></code> and <code class="docutils literal notranslate"><span class="pre">window</span></code> must also be
+passed. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><strong>range_selection</strong> (<em>array</em>) – Array of boolean elements for imposing scale
+cuts. Only used if <code class="docutils literal notranslate"><span class="pre">window</span></code> and <code class="docutils literal notranslate"><span class="pre">M</span></code> are not <code class="docutils literal notranslate"><span class="pre">None.</span> <span class="pre">Default</span> <span class="pre">is</span>
+<span class="pre">``None</span></code>.</p></li>
+<li><p><strong>gaussian_prior</strong> (<em>array</em>) – Gaussian prior to be inlcuded on the Fisher
+matrix when evaluating the Jefrreys prior.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>lp</strong> (<em>array</em>) – Array with shape <code class="docutils literal notranslate"><span class="pre">(nsamp,)</span></code> containing the prior
+evaluation for each sample.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../api.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="poco_api.html" class="btn btn-neutral float-right" title="pocoMC utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Jamie Donald-McCann.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
