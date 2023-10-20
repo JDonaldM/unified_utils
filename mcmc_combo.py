@@ -9,26 +9,31 @@ import logging
 # Adjust the Python logging level so that more than warning and/or errors are shown.
 logging.basicConfig(level=logging.INFO)
 
-# Define path to repo on sciama
-path_to_repo = "/mnt/lustre/jdonaldm/unified_analysis/"
-
 # Read configuration
 #################################################################################################
 
-# Read in path to .yaml file.
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', help="Path to .yaml configuration file.",
-                    required=True)            
+                    required=True)
+parser.add_argument('--path_to_data', help="Path to data directory.",
+                    required=True)
 args = parser.parse_args()
 
 # Make sure config file exists.
 if not os.path.isfile(args.config):
     raise ValueError("No config file found at specified location.")
 
+# Make sure data directory exists.
+if not os.path.isdir(args.path_to_data):
+    raise ValueError("No directory found at specified location.")
+
 # Read conifg file.
 logging.info(f"Reading configuraation file: {args.config}")
 with open(args.config, "r") as stream:
     config_from_file = yaml.safe_load(stream)
+
+# Define path to data
+path_to_repo = args.path_to_data
 
 #################################################################################################
 
