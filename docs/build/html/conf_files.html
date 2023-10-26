@@ -39,7 +39,11 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration files</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#single-sample">Single sample</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multiple-samples">Multiple samples</a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -68,7 +72,11 @@
              
   <section id="configuration-files">
 <h1>Configuration files<a class="headerlink" href="#configuration-files" title="Permalink to this headline"></a></h1>
-<p>The analysis setup for a given run is defined in a configuration <code class="docutils literal notranslate"><span class="pre">.yaml</span></code> file.</p>
+<p>The analysis setup for a given run is defined in a configuration <code class="docutils literal notranslate"><span class="pre">.yaml</span></code> file.
+The form of the file is slightly different if more than one sample is being
+analysed. Examples fo both cases are given below.</p>
+<section id="single-sample">
+<h2>Single sample<a class="headerlink" href="#single-sample" title="Permalink to this headline"></a></h2>
 <p>An example configuration file is given below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Parameters</span><span class="p">:</span>
     <span class="n">As</span><span class="p">:</span>
@@ -236,6 +244,171 @@ posterior samples. We expand on the elements of the <code class="docutils litera
 </div></blockquote>
 </li>
 </ul>
+</section>
+<section id="multiple-samples">
+<h2>Multiple samples<a class="headerlink" href="#multiple-samples" title="Permalink to this headline"></a></h2>
+<p>An example configuration file is given below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Parameters</span><span class="p">:</span>
+    <span class="n">Shared</span><span class="p">:</span>
+        <span class="n">As</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="nb">max</span><span class="p">:</span> <span class="n">emu</span>
+                <span class="nb">min</span><span class="p">:</span> <span class="n">emu</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">uniform</span>
+        <span class="n">h</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="nb">max</span><span class="p">:</span> <span class="n">emu</span>
+                <span class="nb">min</span><span class="p">:</span> <span class="n">emu</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">uniform</span>
+        <span class="n">w_b</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="nb">max</span><span class="p">:</span> <span class="n">emu</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.02235</span>
+                <span class="nb">min</span><span class="p">:</span> <span class="n">emu</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">0.00049</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">truncated</span> <span class="n">normal</span>
+        <span class="n">w_c</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="nb">max</span><span class="p">:</span> <span class="n">emu</span>
+                <span class="nb">min</span><span class="p">:</span> <span class="n">emu</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">uniform</span>
+    <span class="n">eBOSS</span> <span class="n">NGC</span><span class="p">:</span>
+        <span class="n">b1</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="nb">max</span><span class="p">:</span> <span class="mf">4.0</span>
+                <span class="nb">min</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">uniform</span>
+        <span class="n">b3</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">2.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">c2</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="nb">max</span><span class="p">:</span> <span class="mf">4.0</span>
+                <span class="nb">min</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">uniform</span>
+        <span class="n">cct</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">2.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">ce1</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">0.16</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">cquad</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">2.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">cr1</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">8.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">c4</span><span class="p">:</span>
+            <span class="n">fixed</span><span class="p">:</span> <span class="mf">0.0</span>
+        <span class="n">cr2</span><span class="p">:</span>
+            <span class="n">fixed</span><span class="p">:</span> <span class="mf">0.0</span>
+        <span class="n">cmono</span><span class="p">:</span>
+            <span class="n">fixed</span><span class="p">:</span> <span class="mf">0.0</span>
+    <span class="n">eBOSS</span> <span class="n">SGC</span><span class="p">:</span>
+        <span class="n">b1</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="nb">max</span><span class="p">:</span> <span class="mf">4.0</span>
+                <span class="nb">min</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">uniform</span>
+        <span class="n">b3</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">2.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">c2</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="nb">max</span><span class="p">:</span> <span class="mf">4.0</span>
+                <span class="nb">min</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">uniform</span>
+        <span class="n">cct</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">2.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">ce1</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">0.16</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">cquad</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">2.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">cr1</span><span class="p">:</span>
+            <span class="n">prior</span><span class="p">:</span>
+                <span class="n">mean</span><span class="p">:</span> <span class="mf">0.0</span>
+                <span class="n">stddev</span><span class="p">:</span> <span class="mf">8.0</span>
+                <span class="nb">type</span><span class="p">:</span> <span class="n">marg</span>
+        <span class="n">c4</span><span class="p">:</span>
+            <span class="n">fixed</span><span class="p">:</span> <span class="mf">0.0</span>
+        <span class="n">cr2</span><span class="p">:</span>
+            <span class="n">fixed</span><span class="p">:</span> <span class="mf">0.0</span>
+        <span class="n">cmono</span><span class="p">:</span>
+            <span class="n">fixed</span><span class="p">:</span> <span class="mf">0.0</span>
+<span class="n">Setup</span><span class="p">:</span>
+    <span class="n">bridgez</span><span class="p">:</span> <span class="n">true</span>
+    <span class="n">data_type</span><span class="p">:</span> <span class="n">obs</span>
+    <span class="n">engine</span><span class="p">:</span>
+        <span class="n">engine_kwargs</span><span class="p">:</span>
+            <span class="n">P110_scaler</span><span class="p">:</span> <span class="n">log</span>
+            <span class="n">P112_scaler</span><span class="p">:</span> <span class="n">log</span>
+            <span class="n">Pct0_scaler</span><span class="p">:</span> <span class="n">log</span>
+            <span class="n">Pct2_scaler</span><span class="p">:</span> <span class="n">log</span>
+            <span class="n">Ploop0_scaler</span><span class="p">:</span> <span class="n">log</span>
+            <span class="n">Ploop2_scaler</span><span class="p">:</span> <span class="n">log</span>
+            <span class="n">path_to_model</span><span class="p">:</span> <span class="o">/</span><span class="n">mnt</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">jdonaldm</span><span class="o">/</span><span class="n">unified_analysis</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="n">highAs</span><span class="o">/</span>
+            <span class="n">version</span><span class="p">:</span> <span class="n">custom</span>
+        <span class="n">function</span><span class="p">:</span> <span class="n">emu_engine</span>
+        <span class="n">path</span><span class="p">:</span> <span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jdonaldm</span><span class="o">/</span><span class="n">UnifiedUtils</span><span class="o">/</span><span class="n">unified_utils</span><span class="o">/</span><span class="n">engine</span><span class="o">.</span><span class="n">py</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">emulator</span>
+    <span class="n">kmaxs</span><span class="p">:</span>
+    <span class="o">-</span> <span class="mf">0.2</span>
+    <span class="o">-</span> <span class="mf">0.2</span>
+    <span class="n">kmins</span><span class="p">:</span>
+    <span class="o">-</span> <span class="mf">0.01</span>
+    <span class="o">-</span> <span class="mf">0.01</span>
+    <span class="n">likelihood</span><span class="p">:</span>
+        <span class="n">function</span><span class="p">:</span> <span class="n">combo_marg_like</span>
+        <span class="n">path</span><span class="p">:</span> <span class="o">/</span><span class="n">users</span><span class="o">/</span><span class="n">jdonaldm</span><span class="o">/</span><span class="n">UnifiedUtils</span><span class="o">/</span><span class="n">unified_utils</span><span class="o">/</span><span class="n">likelihood</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">norm_cov</span><span class="p">:</span> <span class="mf">1.0</span>
+    <span class="n">redshifts</span><span class="p">:</span>
+    <span class="o">-</span> <span class="mf">1.52</span>
+    <span class="o">-</span> <span class="mf">1.52</span>
+    <span class="n">sampler</span><span class="p">:</span>
+        <span class="n">nsamples</span><span class="p">:</span> <span class="mi">50000</span>
+        <span class="n">nwalk</span><span class="p">:</span> <span class="mi">1000</span>
+        <span class="n">save_like</span><span class="p">:</span> <span class="kc">True</span>
+    <span class="n">samples</span><span class="p">:</span>
+    <span class="o">-</span> <span class="n">eBOSS</span> <span class="n">NGC</span>
+    <span class="o">-</span> <span class="n">eBOSS</span> <span class="n">SGC</span>
+    <span class="n">save</span><span class="p">:</span>
+        <span class="n">diagnostics</span><span class="p">:</span> <span class="n">true</span>
+        <span class="n">fname</span><span class="p">:</span> <span class="n">chain</span><span class="o">.</span><span class="n">eBOSS</span><span class="o">.</span><span class="n">highAs</span><span class="o">.</span><span class="n">model1</span>
+        <span class="n">fname_tags</span><span class="p">:</span> <span class="n">true</span>
+        <span class="n">overwrite</span><span class="p">:</span> <span class="n">true</span>
+        <span class="n">path</span><span class="p">:</span> <span class="o">/</span><span class="n">mnt</span><span class="o">/</span><span class="n">lustre</span><span class="o">/</span><span class="n">jdonaldm</span><span class="o">/</span><span class="n">unified_analysis</span><span class="o">/</span><span class="n">results</span><span class="o">/</span><span class="n">package_run</span><span class="o">/</span>
+</pre></div>
+</div>
+<p>Most of the elements of the configuration file are the same as in the single
+sample case. Rather than defining these all again we highligh the differences:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">&quot;Parameters&quot;</span></code> dictionary is now split into seperate dictionaries for the parameters that are shared for all samples and for parameters that are specific to each sample. In the example above we have two samples that we have named <code class="docutils literal notranslate"><span class="pre">eBOSS</span> <span class="pre">NGC</span></code> and <code class="docutils literal notranslate"><span class="pre">eBOSS</span> <span class="pre">SGC</span></code> that have unique nuisance parameters but shared cosmological parameters.</p></li>
+<li><p>In the <code class="docutils literal notranslate"><span class="pre">&quot;Setup&quot;</span></code> dictionary there is a new <code class="docutils literal notranslate"><span class="pre">&quot;samples&quot;</span></code> key that takes the form of a list of the user defined names for each sample.</p></li>
+<li><p>The scale cuts <code class="docutils literal notranslate"><span class="pre">&quot;kmax&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;kmin&quot;</span></code> for each sample are passed as lists. In the example above they are the same for each sample but that does not need to be the case.</p></li>
+<li><p>The redshifts for each sample are defined as a list in <code class="docutils literal notranslate"><span class="pre">&quot;redshifts&quot;</span></code> which replaces the single value <code class="docutils literal notranslate"><span class="pre">&quot;redshift&quot;</span></code>.</p></li>
+</ul>
+</section>
 </section>
 
 
