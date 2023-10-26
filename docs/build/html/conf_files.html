@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuration files &mdash; unified_utils 0.0.2 documentation</title>
+  <title>Configuration files and inference scripts &mdash; unified_utils 0.0.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -39,7 +39,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration files</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration files and inference scripts</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#single-sample">Single sample</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#multiple-samples">Multiple samples</a></li>
 </ul>
@@ -60,7 +60,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Configuration files</li>
+      <li>Configuration files and inference scripts</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/conf_files.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -70,8 +70,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="configuration-files">
-<h1>Configuration files<a class="headerlink" href="#configuration-files" title="Permalink to this headline"></a></h1>
+  <section id="configuration-files-and-inference-scripts">
+<h1>Configuration files and inference scripts<a class="headerlink" href="#configuration-files-and-inference-scripts" title="Permalink to this headline"></a></h1>
 <p>The analysis setup for a given run is defined in a configuration <code class="docutils literal notranslate"><span class="pre">.yaml</span></code> file.
 The form of the file is slightly different if more than one sample is being
 analysed. Examples fo both cases are given below.</p>
@@ -244,6 +244,14 @@ posterior samples. We expand on the elements of the <code class="docutils litera
 </div></blockquote>
 </li>
 </ul>
+<p>Once a configuration file has been defined the <code class="docutils literal notranslate"><span class="pre">mcmc.py</span></code> script can be used as
+to conduct parameter inference with a single sample as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">mcmc</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">config</span> <span class="o">&lt;/</span><span class="n">path_to</span><span class="o">/</span><span class="n">configuration</span><span class="o">.</span><span class="n">yaml</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">path_to_data</span> <span class="o">&lt;/</span><span class="n">path_to</span><span class="o">/</span><span class="n">data_directory</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">data_directory</span></code> should contain the unified multipoles published in
+Beutler and McDonald
+(<a class="reference external" href="https://iopscience.iop.org/article/10.1088/1475-7516/2021/11/031">2021</a>).</p>
 </section>
 <section id="multiple-samples">
 <h2>Multiple samples<a class="headerlink" href="#multiple-samples" title="Permalink to this headline"></a></h2>
@@ -408,6 +416,14 @@ sample case. Rather than defining these all again we highligh the differences:</
 <li><p>The scale cuts <code class="docutils literal notranslate"><span class="pre">&quot;kmax&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;kmin&quot;</span></code> for each sample are passed as lists. In the example above they are the same for each sample but that does not need to be the case.</p></li>
 <li><p>The redshifts for each sample are defined as a list in <code class="docutils literal notranslate"><span class="pre">&quot;redshifts&quot;</span></code> which replaces the single value <code class="docutils literal notranslate"><span class="pre">&quot;redshift&quot;</span></code>.</p></li>
 </ul>
+<p>Once a configuration file has been defined the <code class="docutils literal notranslate"><span class="pre">mcmc_combo.py</span></code> script can be used as
+to conduct parameter inference with a multiple samples as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">mcmc_combo</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">config</span> <span class="o">&lt;/</span><span class="n">path_to</span><span class="o">/</span><span class="n">configuration</span><span class="o">.</span><span class="n">yaml</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">path_to_data</span> <span class="o">&lt;/</span><span class="n">path_to</span><span class="o">/</span><span class="n">data_directory</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">data_directory</span></code> should contain the unified multipoles published in
+Beutler and McDonald
+(<a class="reference external" href="https://iopscience.iop.org/article/10.1088/1475-7516/2021/11/031">2021</a>).</p>
 </section>
 </section>
 

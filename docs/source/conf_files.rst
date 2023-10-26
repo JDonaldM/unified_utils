@@ -1,6 +1,6 @@
-===================
-Configuration files
-===================
+=========================================
+Configuration files and inference scripts
+=========================================
 
 The analysis setup for a given run is defined in a configuration ``.yaml`` file.
 The form of the file is slightly different if more than one sample is being 
@@ -163,6 +163,15 @@ posterior samples. We expand on the elements of the ``"Setup"`` dictionary below
     - ``"fname_tags"``: If ``True``, keys and values from the ``"Setup"`` dictionary will be used as file name tags.
     - ``"overwrite"``: If ``True``, existing files will be overwritten.
     - ``"path"``: Path to directory for storing results.
+
+Once a configuration file has been defined the ``mcmc.py`` script can be used as
+to conduct parameter inference with a single sample as follows::
+
+    python mcmc.py --config </path_to/configuration.yaml> --path_to_data </path_to/data_directory>
+
+The ``data_directory`` should contain the unified multipoles published in 
+Beutler and McDonald 
+(`2021 <https://iopscience.iop.org/article/10.1088/1475-7516/2021/11/031>`_).
 
 
 ----------------
@@ -329,3 +338,12 @@ sample case. Rather than defining these all again we highligh the differences:
 * In the ``"Setup"`` dictionary there is a new ``"samples"`` key that takes the form of a list of the user defined names for each sample.
 * The scale cuts ``"kmax"`` and ``"kmin"`` for each sample are passed as lists. In the example above they are the same for each sample but that does not need to be the case.
 * The redshifts for each sample are defined as a list in ``"redshifts"`` which replaces the single value ``"redshift"``.
+
+Once a configuration file has been defined the ``mcmc_combo.py`` script can be used as
+to conduct parameter inference with a multiple samples as follows::
+
+    python mcmc_combo.py --config </path_to/configuration.yaml> --path_to_data </path_to/data_directory>
+
+The ``data_directory`` should contain the unified multipoles published in 
+Beutler and McDonald 
+(`2021 <https://iopscience.iop.org/article/10.1088/1475-7516/2021/11/031>`_).
