@@ -19,3 +19,4 @@ This is the inference pipeline used in Donald-McCann et al.
    :caption: Contents:
 
    api
+   conf_files
