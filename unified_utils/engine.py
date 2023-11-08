@@ -3,9 +3,14 @@ import matryoshka.emulator as MatEmu
 from scipy.interpolate import interp1d
 from matryoshka.training_funcs import LogScaler, UniformScaler
 from matryoshka import halo_model_funcs
+from matryoshka import eft_funcs
 from matryoshka import rsd
 
-scaler_fn_dict = {'log':LogScaler, 'uniform':UniformScaler}
+scaler_fn_dict = {
+    'log':LogScaler,
+    'uniform':UniformScaler,
+    'None': lambda : None # Callable for None.
+}
 
 class emu_engine:
     '''
