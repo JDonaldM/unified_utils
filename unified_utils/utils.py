@@ -616,26 +616,13 @@ def jeff_counter_sys(theta, engine, kobs, cinv, fixed_vals, ng, km, jeff_names,
         M,
         range_selection
     )
+    
+    if gaussian_prior is not None:
+        Fm = np.einsum("kni,ij,pnj->nkp", derivs, cinv, derivs) + gaussian_prior[np.newaxis,:,:]
+    else:
+        Fm = np.einsum("kni,ij,pnj->nkp", derivs, cinv, derivs)
 
-    # Initalise at zero
-    pri_eval = np.zeros((theta.shape[0],))
-
-    # Loop over all samples
-    for s in range(theta.shape[0]):
-        # Create empty square matirx with side lenghth equal to the number of 
-        # parameters with Jeffreys prior 
-        Fm = np.zeros((derivs.shape[0], derivs.shape[0]))
-        for i in range(derivs.shape[0]):
-            for j in range(derivs.shape[0]):
-                # Caclulate appropriate product for each matrix element.
-                Fm[i,j] = np.dot(np.dot(derivs[i][s], cinv), derivs[j][s])
-
-        if gaussian_prior is not None:
-            # Inlcude additional Gaussian prior if specified.
-            Fm += gaussian_prior
-
-        # Finish evaluation of the Jeffreys prior.
-        pri_eval[s] = np.log(np.sqrt(np.linalg.det(Fm)))
+    pri_eval = np.log(np.sqrt(np.linalg.det(Fm)))
 
     # If specified include evaluation of additional priors.
     if additional_prior:
